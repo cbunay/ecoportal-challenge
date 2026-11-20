@@ -1,11 +1,12 @@
 import { eventTimeLabel, layoutWeekEvents } from "@/lib/calendar-grid";
 import type { CalendarEvent } from "@/sever/event.type";
+import { selectEvent } from "@/store/features/calendar/calendar.slice";
+import { useCalendarDispatch } from "@/store/hooks";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 const barHeight = 20;
 
-/** Seven-column grid of event bars for one week, one lane per grid row. */
 export function WeekBars({
   week,
   events,
@@ -13,6 +14,8 @@ export function WeekBars({
   week: { key: string }[];
   events: CalendarEvent[];
 }) {
+  const dispatch = useCalendarDispatch();
+
   return (
     <Box
       sx={{
@@ -31,6 +34,9 @@ export function WeekBars({
               key={event.id}
               noWrap
               title={event.name}
+              role="button"
+              tabIndex={0}
+              onClick={() => dispatch(selectEvent(event))}
               sx={{
                 gridColumn: `${colStart + 1} / ${colEnd + 2}`,
                 gridRow: lane + 1,
@@ -42,6 +48,7 @@ export function WeekBars({
                 color: "#fff",
                 bgcolor: "#1A73E8",
                 pointerEvents: "auto",
+                cursor: "pointer",
                 borderTopLeftRadius: startsInWeek ? "4px" : 0,
                 borderBottomLeftRadius: startsInWeek ? "4px" : 0,
                 borderTopRightRadius: endsInWeek ? "4px" : 0,

@@ -8,6 +8,9 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { selectEvent } from "@/store/features/calendar/calendar.slice";
+import { useCalendarDispatch } from "@/store/hooks";
+
 import { WeekBars } from "./WeekBars";
 
 const border = "1px solid #e6e8ec";
@@ -28,6 +31,8 @@ export function WeekGrid({
   eventsByDay?: Record<string, CalendarEvent[]>;
   multiDayEvents?: CalendarEvent[];
 }) {
+  const dispatch = useCalendarDispatch();
+
   return (
     <Stack
       role="grid"
@@ -146,14 +151,15 @@ export function WeekGrid({
               <Box key={day.key} sx={{ position: "relative", minWidth: 0 }}>
                 {layoutDayEvents(eventsByDay[day.key] ?? []).map(
                   ({ event, startMinutes, endMinutes, index, count }) => {
-                    // Cascade overlapping events: each one is shifted right by
-                    // `step` and sits on top of the previous one.
                     const step = 100 / (count + 1);
 
                     return (
                       <Box
                         key={event.id}
                         title={`${event.name}, ${eventTimeLabel(event.startDate)}`}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => dispatch(selectEvent(event))}
                         sx={{
                           position: "absolute",
                           top: (startMinutes / 60) * hourHeight,
@@ -167,6 +173,7 @@ export function WeekGrid({
                           px: 0.75,
                           overflow: "hidden",
                           pointerEvents: "auto",
+                          cursor: "pointer",
                           fontSize: 11,
                           lineHeight: "18px",
                           borderRadius: "4px",

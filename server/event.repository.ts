@@ -10,7 +10,6 @@ import type {
   UpdateEventInput,
 } from "./event.type";
 
-// Simulate a database table. Dates stay as the ISO strings the UI sends.
 let events: CalendarEvent[] = structuredClone(initialEvents) as CalendarEvent[];
 
 export const eventRepository = {
@@ -31,7 +30,6 @@ export const eventRepository = {
         const eventStart = parseISO(event.startDate).getTime();
         const eventEnd = parseISO(event.endDate).getTime();
 
-        // Include events that overlap the requested range
         return eventStart < rangeEnd && eventEnd > rangeStart;
       })
       .sort(

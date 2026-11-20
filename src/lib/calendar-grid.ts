@@ -183,6 +183,17 @@ export function eventTimeLabel(iso: string) {
   return format(new Date(iso), "h:mm a", { in: inTimeZone });
 }
 
+export function eventRangeLabel(event: CalendarEvent) {
+  const start = new Date(event.startDate);
+  const end = new Date(event.endDate);
+  if (isMultiDay(event)) {
+    const pattern = "EEE, MMM d, h:mm a";
+    return `${format(start, pattern, { in: inTimeZone })} – ${format(end, pattern, { in: inTimeZone })}`;
+  }
+  const day = format(start, "EEEE, MMMM d", { in: inTimeZone });
+  return `${day} · ${eventTimeLabel(event.startDate)} – ${eventTimeLabel(event.endDate)}`;
+}
+
 export function eventHourLabel(iso: string) {
   return format(new Date(iso), "h a", { in: inTimeZone });
 }
@@ -191,7 +202,6 @@ export type PositionedEvent = {
   event: CalendarEvent;
   startMinutes: number;
   endMinutes: number;
-  // Position inside a group of overlapping events, and the group's size.
   index: number;
   count: number;
 };
@@ -204,7 +214,6 @@ function minutesOfDay(iso: string) {
   );
 }
 
-/** Places one day's events on the 24h axis and groups the overlapping ones. */
 export function layoutDayEvents(events: CalendarEvent[]): PositionedEvent[] {
   const items = events
     .map((event) => {
@@ -247,19 +256,15 @@ export function layoutDayEvents(events: CalendarEvent[]): PositionedEvent[] {
 
 export type WeekBar = {
   event: CalendarEvent;
-  // Zero-based day columns the bar covers inside this week.
   colStart: number;
   colEnd: number;
   lane: number;
-  // False when the event continues from / into the adjacent week.
   startsInWeek: boolean;
   endsInWeek: boolean;
 };
 
-/** First and last day (yyyy-MM-dd) an event occupies. */
 function eventDayRange(event: CalendarEvent) {
   const startKey = eventDayKey(event.startDate);
-  // An event ending exactly at midnight does not occupy that day.
   const endKey = eventDayKey(
     new Date(new Date(event.endDate).getTime() - 1).toISOString(),
   );
@@ -273,7 +278,6 @@ export function isMultiDay(event: CalendarEvent) {
   return startKey !== endKey;
 }
 
-/** Lays out the events touching one week as bars in stacked lanes. */
 export function layoutWeekEvents(
   week: { key: string }[],
   events: CalendarEvent[],
@@ -297,7 +301,6 @@ export function layoutWeekEvents(
       startsInWeek: startKey >= weekStart,
       endsInWeek: endKey <= weekEnd,
     }))
-    // Longest first so wide bars take the top lanes.
     .sort(
       (a, b) =>
         a.colStart - b.colStart ||
