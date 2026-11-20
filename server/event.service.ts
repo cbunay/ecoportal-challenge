@@ -8,7 +8,6 @@ import {
 } from "./event.schema";
 
 export const eventService = {
-  
   async getEvents(start?: string, end?: string) {
     if (!start && !end) {
       return eventRepository.findAll();

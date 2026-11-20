@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import Box from "@mui/material/Box";
@@ -9,9 +9,12 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 
+import { CreateEventDialog } from "./CreateEventDialog";
+
 export function Sidebar() {
-  const [createAnchor, setCreateAnchor] = useState<HTMLElement | null>(null);
-  const createOpen = Boolean(createAnchor);
+  const createButton = useRef<HTMLButtonElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   return (
     <Box
       component="nav"
@@ -50,11 +53,12 @@ export function Sidebar() {
       </Box>
       <Button
         variant="outlined"
+        ref={createButton}
         endIcon={<AddIcon />}
         aria-haspopup="menu"
-        aria-expanded={createOpen}
-        aria-controls={createOpen ? "create-menu" : undefined}
-        onClick={(event) => setCreateAnchor(event.currentTarget)}
+        aria-expanded={menuOpen}
+        aria-controls={menuOpen ? "create-menu" : undefined}
+        onClick={() => setMenuOpen(true)}
         sx={{
           mt: 3,
           height: 40,
@@ -67,16 +71,26 @@ export function Sidebar() {
       >
         Create
       </Button>
-      <Menu
-        id="create-menu"
-        anchorEl={createAnchor}
-        open={createOpen}
-        onClose={() => setCreateAnchor(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-      >
-        <MenuItem onClick={() => setCreateAnchor(null)}>Meeting</MenuItem>
-      </Menu>
+      {menuOpen && (
+        <Menu
+          id="create-menu"
+          anchorEl={() => createButton.current as HTMLElement}
+          open
+          onClose={() => setMenuOpen(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "left" }}
+        >
+          <MenuItem
+            onClick={() => {
+              setMenuOpen(false);
+              setDialogOpen(true);
+            }}
+          >
+            Meeting
+          </MenuItem>
+        </Menu>
+      )}
+      {dialogOpen && <CreateEventDialog onClose={() => setDialogOpen(false)} />}
     </Box>
   );
 }

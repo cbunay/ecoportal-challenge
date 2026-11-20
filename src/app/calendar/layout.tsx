@@ -6,28 +6,30 @@ import { StoreProvider } from "@/app/StoreProvider";
 
 export default function CalendarLayout({ children }: { children: ReactNode }) {
   return (
-    <Stack direction="row" sx={{ height: "100dvh" }}>
-      <Sidebar />
-      <Stack direction="column" sx={{ flex: 1 }}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <CalendarToolbar />
-        </Suspense>
-        <Stack
-          component="main"
-          sx={{
-            m: "0rem 1rem 1rem",
-            bgcolor: "background.paper",
-            border: "1px solid #e6e8ec",
-            borderRadius: "12px",
-            overflow: "hidden",
-            flex: 1,
-          }}
-        >
-          <Suspense fallback={<div>Loading...</div>}>
-            <StoreProvider>{children}</StoreProvider>
-          </Suspense>
+    <Suspense fallback={<div>Loading...</div>}>
+      <StoreProvider>
+        <Stack direction="row" sx={{ height: "100dvh" }}>
+          <Sidebar />
+          <Stack direction="column" sx={{ flex: 1 }}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <CalendarToolbar />
+            </Suspense>
+            <Stack
+              component="main"
+              sx={{
+                m: "0rem 1rem 1rem",
+                bgcolor: "background.paper",
+                border: "1px solid #e6e8ec",
+                borderRadius: "12px",
+                overflow: "hidden",
+                flex: 1,
+              }}
+            >
+              <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+            </Stack>
+          </Stack>
         </Stack>
-      </Stack>
-    </Stack>
+      </StoreProvider>
+    </Suspense>
   );
 }

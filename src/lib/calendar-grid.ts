@@ -141,6 +141,18 @@ export function parseDateParam(param: string | null, fallback: Date) {
   return isValid(parsed) ? parsed : fallback;
 }
 
+const inputFormat = "yyyy-MM-dd'T'HH:mm";
+
+export function toInputValue(date: Date) {
+  return format(date, inputFormat, { in: inTimeZone });
+}
+
+export function fromInputValue(value: string) {
+  const parsed = parse(value, inputFormat, new Date(), { in: inTimeZone });
+
+  return isValid(parsed) ? utcIso(parsed) : null;
+}
+
 function utcIso(date: Date) {
   return new Date(date.getTime()).toISOString();
 }

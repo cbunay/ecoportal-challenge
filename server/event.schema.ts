@@ -1,7 +1,7 @@
 import { parseISO } from "date-fns";
 import { z } from "zod";
 
-import { EVENT_TYPES } from "./event.type";
+import { EventType } from "./event.type";
 
 export class InvalidEventError extends Error {
   readonly errors: string[];
@@ -15,7 +15,7 @@ export class InvalidEventError extends Error {
 
 export const eventBaseSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
-  type: z.enum(EVENT_TYPES),
+  type: z.enum(EventType),
   startDate: z.iso.datetime({ error: "Invalid start date" }),
   endDate: z.iso.datetime({ error: "Invalid end date" }),
 });
