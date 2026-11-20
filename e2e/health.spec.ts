@@ -5,7 +5,7 @@ test("calendar app is healthy", async ({ page }) => {
   const response = await page.goto("/");
 
   expect(response?.ok()).toBe(true);
-  await expect(page).toHaveURL(/\/calendar$/);
+  await expect(page).toHaveURL(/\/calendar\/month$/);
   await expect(page).toHaveTitle("Calendar");
 
   const sidebar = page.getByRole("navigation", { name: "Sidebar" });
@@ -13,7 +13,9 @@ test("calendar app is healthy", async ({ page }) => {
 
   const toolbar = page.getByRole("toolbar", { name: "Toolbar" });
   await expect(toolbar.getByRole("button", { name: "Today" })).toBeVisible();
-  await expect(toolbar.getByRole("combobox", { name: "View" })).toBeVisible();
+  await expect(toolbar.getByRole("button", { name: "View" })).toHaveText(
+    "Month",
+  );
   await expect(toolbar.getByRole("button", { name: "Previous" })).toBeVisible();
   await expect(toolbar.getByRole("button", { name: "Next" })).toBeVisible();
 

@@ -1,20 +1,16 @@
-"use client";
-
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import { CalendarToolbar } from "./CalendarToolbar";
-import { Sidebar } from "./Sidebar";
 
-export function Calendar({ dateLabel }: { dateLabel: ReactNode }) {
+import { CalendarToolbar } from "@/components/calendar/CalendarToolbar";
+import { Sidebar } from "@/components/calendar/Sidebar";
+
+export default function CalendarLayout({ children }: { children: ReactNode }) {
   return (
     <Box
       sx={{
         height: "100dvh",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "background.default",
-        overflow: "hidden",
       }}
     >
       <Box aria-hidden sx={{ height: 10, flexShrink: 0, bgcolor: "#1E4E8C" }} />
@@ -28,7 +24,7 @@ export function Calendar({ dateLabel }: { dateLabel: ReactNode }) {
             flexDirection: "column",
           }}
         >
-          <CalendarToolbar dateLabel={dateLabel} />
+          <CalendarToolbar />
           <Box
             component="main"
             sx={{
@@ -36,16 +32,15 @@ export function Calendar({ dateLabel }: { dateLabel: ReactNode }) {
               minHeight: 0,
               mx: 2,
               mb: 2,
-              display: "grid",
-              placeItems: "center",
+              display: "flex",
+              flexDirection: "column",
               bgcolor: "#fff",
               border: "1px solid #e6e8ec",
               borderRadius: "12px",
+              overflow: "hidden",
             }}
           >
-            <Typography sx={{ fontSize: 16, color: "text.secondary" }}>
-              Calendar content
-            </Typography>
+            {children}
           </Box>
         </Box>
       </Box>

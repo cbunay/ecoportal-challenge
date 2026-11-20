@@ -1,15 +1,5 @@
-import { Suspense } from "react";
-import { Calendar } from "@/components/calendar/Calendar";
-import { CurrentMonth } from "@/components/calendar/CurrentMonth";
+import { redirect } from "next/navigation";
 
 export default function CalendarPage() {
-  return (
-    <Calendar
-      dateLabel={
-        <Suspense fallback={<span aria-hidden>&nbsp;</span>}>
-          <CurrentMonth />
-        </Suspense>
-      }
-    />
-  );
+  redirect("/calendar/month");
 }

@@ -1,10 +1,5 @@
-import { tz } from "@date-fns/tz";
-import { format } from "date-fns";
-
-import { calendarTimeZone } from "@/lib/defaults";
-
-const inTimeZone = tz(calendarTimeZone);
+import { CalendarView, formatPeriodLabel } from "@/lib/calendar-grid";
 
 export function formatToolbarDate(date: Date) {
-  return format(date, "MMMM yyyy", { in: inTimeZone });
+  return formatPeriodLabel(date, CalendarView.Month);
 }

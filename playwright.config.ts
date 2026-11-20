@@ -17,7 +17,7 @@ export default defineConfig({
   },
   webServer: {
     command: `npm run dev -- --port ${port}`,
-    url: `${baseURL}/calendar`,
+    url: `${baseURL}/calendar/month`,
     reuseExistingServer: !process.env.CI,
     env: {
       ...(process.env as Record<string, string>),

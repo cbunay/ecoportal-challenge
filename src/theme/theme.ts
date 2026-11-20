@@ -24,6 +24,8 @@ const theme = createTheme({
         root: {
           textTransform: "none",
           borderColor: "#dadce0",
+          color: "inherit",
+          borderRadius: 999,
         },
       },
     },
