@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+import { testTimeZone } from "./src/lib/defaults";
+
 const port = process.env.PLAYWRIGHT_PORT ?? "3000";
 const baseURL = `http://localhost:${port}`;
 
@@ -11,16 +13,21 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "on-first-retry",
+    timezoneId: testTimeZone,
   },
   webServer: {
     command: `npm run dev -- --port ${port}`,
     url: `${baseURL}/calendar`,
     reuseExistingServer: !process.env.CI,
+    env: {
+      ...(process.env as Record<string, string>),
+      TZ: testTimeZone,
+    },
   },
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...devices["Desktop Chrome"], timezoneId: testTimeZone },
     },
   ],
 });

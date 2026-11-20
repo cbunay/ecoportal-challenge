@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { testTimeZone } from "../src/lib/defaults";
 
 test("calendar app is healthy", async ({ page }) => {
   const response = await page.goto("/");
@@ -17,4 +18,9 @@ test("calendar app is healthy", async ({ page }) => {
   await expect(toolbar.getByRole("button", { name: "Next" })).toBeVisible();
 
   await expect(page.getByRole("main")).toBeVisible();
+
+  const browserTimeZone = await page.evaluate(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+  );
+  expect(browserTimeZone).toBe(testTimeZone);
 });
