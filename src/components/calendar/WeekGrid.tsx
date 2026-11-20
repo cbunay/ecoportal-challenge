@@ -1,7 +1,7 @@
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-
 import type { WeekDay } from "@/lib/calendar-grid";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
 const border = "1px solid #e6e8ec";
 
@@ -14,19 +14,18 @@ export function WeekGrid({
   hours: string[];
   offsetLabel: string;
 }) {
+
   return (
-    <Box
+    <Stack
       role="grid"
       aria-label="Week"
-      sx={{ flex: 1, minHeight: 0, overflow: "auto" }}
+      direction="column"
+      sx={{ minHeight: 0 }}
     >
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: "72px repeat(7, 1fr)",
-          position: "sticky",
-          top: 0,
-          zIndex: 1,
           bgcolor: "#fff",
           borderBottom: border,
         }}
@@ -43,17 +42,13 @@ export function WeekGrid({
           {offsetLabel}
         </Typography>
         {days.map((day) => (
-          <Box
+          <Stack
+            direction="column"
             key={day.key}
-            role="columnheader"
             sx={{
               py: 1,
-              textAlign: "center",
               borderLeft: border,
-              display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "column",
             }}
           >
             <Typography
@@ -63,50 +58,54 @@ export function WeekGrid({
             </Typography>
             <Typography
               sx={{
-                fontSize: 22,
+                textAlign: "center",
+                fontSize: 20,
                 borderRadius: "50%",
-                width: 32,
-                height: 32,
+                width: 30,
+                height: 30,
                 backgroundColor: day.isToday ? "#1A73E8" : "transparent",
                 color: day.isToday ? "#fff" : "#3c4043",
               }}
             >
               {day.label}
             </Typography>
-          </Box>
+          </Stack>
         ))}
       </Box>
-      {hours.map((hour) => (
-        <Box
-          key={hour}
-          role="row"
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "72px repeat(7, 1fr)",
-            minHeight: 48,
-            borderBottom: border,
-          }}
-        >
-          <Typography
+      <Stack direction="column" sx={{ overflow: "auto" }}>
+        {hours.map((hour) => (
+          <Box
+            key={hour}
+            role="row"
             sx={{
-              pr: 1,
-              pt: 0.5,
-              textAlign: "right",
-              fontSize: 10,
-              color: "#70757a",
+              display: "grid",
+              gridTemplateColumns: "72px repeat(7, 1fr)",
+              minHeight: 48,
+              borderBottom: border,
+              overflow: "auto",
             }}
           >
-            {hour}
-          </Typography>
-          {days.map((day) => (
-            <Box
-              key={`${day.key}-${hour}`}
-              role="gridcell"
-              sx={{ borderLeft: border }}
-            />
-          ))}
-        </Box>
-      ))}
-    </Box>
+            <Typography
+              sx={{
+                pr: 1,
+                pt: 0.5,
+                textAlign: "right",
+                fontSize: 10,
+                color: "#70757a",
+              }}
+            >
+              {hour}
+            </Typography>
+            {days.map((day) => (
+              <Box
+                key={`${day.key}-${hour}`}
+                role="gridcell"
+                sx={{ borderLeft: border }}
+              />
+            ))}
+          </Box>
+        ))}
+      </Stack>
+    </Stack>
   );
 }

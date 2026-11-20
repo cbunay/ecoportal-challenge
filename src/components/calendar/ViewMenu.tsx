@@ -1,16 +1,15 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 
 import { CalendarView } from "@/lib/calendar-grid";
 
 export function ViewMenu() {
-  const { view: viewParam } = useParams<{ view: CalendarView }>();
-  const view =
-    viewParam === CalendarView.Week ? CalendarView.Week : CalendarView.Month;
+  const { view } = useParams<{ view: CalendarView }>();
   const router = useRouter();
+  const search = useSearchParams().toString();
 
   return (
     <Select
@@ -18,7 +17,11 @@ export function ViewMenu() {
       variant="outlined"
       size="small"
       inputProps={{ "aria-label": "View" }}
-      onChange={(event) => router.push(`/calendar/${event.target.value}`)}
+      onChange={(event) =>
+        router.push(
+          `/calendar/${event.target.value}${search ? `?${search}` : ""}`,
+        )
+      }
       sx={{ ml: "auto", borderRadius: 999 }}
     >
       <MenuItem value={CalendarView.Month}>Month</MenuItem>

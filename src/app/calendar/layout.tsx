@@ -1,49 +1,33 @@
-import { type ReactNode } from "react";
-import Box from "@mui/material/Box";
-
 import { CalendarToolbar } from "@/components/calendar/CalendarToolbar";
 import { Sidebar } from "@/components/calendar/Sidebar";
+import Stack from "@mui/material/Stack";
+import { Suspense, type ReactNode } from "react";
+import { StoreProvider } from "@/app/StoreProvider";
 
 export default function CalendarLayout({ children }: { children: ReactNode }) {
   return (
-    <Box
-      sx={{
-        height: "100dvh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Box aria-hidden sx={{ height: 10, flexShrink: 0, bgcolor: "#1E4E8C" }} />
-      <Box sx={{ flex: 1, minHeight: 0, display: "flex" }}>
-        <Sidebar />
-        <Box
+    <Stack direction="row" sx={{ height: "100dvh" }}>
+      <Sidebar />
+      <Stack direction="column" sx={{ flex: 1 }}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <CalendarToolbar />
+        </Suspense>
+        <Stack
+          component="main"
           sx={{
+            m: "0rem 1rem 1rem",
+            bgcolor: "background.paper",
+            border: "1px solid #e6e8ec",
+            borderRadius: "12px",
+            overflow: "hidden",
             flex: 1,
-            minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
           }}
         >
-          <CalendarToolbar />
-          <Box
-            component="main"
-            sx={{
-              flex: 1,
-              minHeight: 0,
-              mx: 2,
-              mb: 2,
-              display: "flex",
-              flexDirection: "column",
-              bgcolor: "#fff",
-              border: "1px solid #e6e8ec",
-              borderRadius: "12px",
-              overflow: "hidden",
-            }}
-          >
-            {children}
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+          <Suspense fallback={<div>Loading...</div>}>
+            <StoreProvider>{children}</StoreProvider>
+          </Suspense>
+        </Stack>
+      </Stack>
+    </Stack>
   );
 }

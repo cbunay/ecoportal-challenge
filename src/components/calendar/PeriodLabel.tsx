@@ -2,21 +2,23 @@
 
 import Typography from "@mui/material/Typography";
 
-import { formatPeriodLabel } from "@/lib/calendar-grid";
-import { CalendarView } from "@/lib/calendar-grid";
-import { useParams } from "next/navigation";
-import { useAppSelector } from "@/store/hooks";
+import {
+  CalendarView,
+  formatPeriodLabel,
+  parseDateParam,
+} from "@/lib/calendar-grid";
+import { useParams, useSearchParams } from "next/navigation";
 
 export function PeriodLabel() {
   const { view } = useParams<{ view: CalendarView }>();
-  const today = useAppSelector((state) => state.calendar.today);
+  const focusedDate = parseDateParam(useSearchParams().get("date"), new Date());
 
   return (
     <Typography
       component="h1"
       sx={{ fontSize: 22, fontWeight: 400, color: "#3c4043" }}
     >
-      {formatPeriodLabel(new Date(today), view)}
+      {formatPeriodLabel(focusedDate, view)}
     </Typography>
   );
 }

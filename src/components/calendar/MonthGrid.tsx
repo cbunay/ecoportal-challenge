@@ -1,5 +1,6 @@
 import type { MonthDay } from "@/lib/calendar-grid";
 import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 const border = "1px solid #e6e8ec";
@@ -8,18 +9,8 @@ const labelColor = (day: MonthDay) => (day.inMonth ? "#3c4043" : "#70757a");
 
 export function MonthGrid({ weeks }: { weeks: MonthDay[][] }) {
   return (
-    <Box
-      role="grid"
-      aria-label="Month"
-      sx={{
-        flex: 1,
-        minHeight: 0,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <Stack direction="column" sx={{ flex: 1 }}>
       <Box
-        role="row"
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(7, 1fr)",
@@ -56,14 +47,14 @@ export function MonthGrid({ weeks }: { weeks: MonthDay[][] }) {
           }}
         >
           {week.map((day) => (
-            <Box
+            <Stack
               key={day.key}
               role="gridcell"
               aria-current={day.isToday ? "date" : undefined}
               sx={{
                 minWidth: 0,
-                p: 1,
-                textAlign: "center",
+                p: "0 1rem 1rem 1rem",
+                alignItems: "center",
                 borderRight: border,
                 "&:last-of-type": { borderRight: "none" },
               }}
@@ -72,9 +63,9 @@ export function MonthGrid({ weeks }: { weeks: MonthDay[][] }) {
                 sx={{
                   fontSize: 12,
                   fontWeight: 500,
+                  textAlign: "center",
                   lineHeight: "24px",
                   width: day.isToday ? 24 : "auto",
-                  textAlign: "center",
                   borderRadius: "50%",
                   color: day.isToday ? "#fff" : labelColor(day),
                   bgcolor: day.isToday ? "#1A73E8" : "transparent",
@@ -82,10 +73,10 @@ export function MonthGrid({ weeks }: { weeks: MonthDay[][] }) {
               >
                 {day.label}
               </Typography>
-            </Box>
+            </Stack>
           ))}
         </Box>
       ))}
-    </Box>
+    </Stack>
   );
 }

@@ -1,11 +1,15 @@
 import { tz } from "@date-fns/tz";
 import {
+  addMonths,
+  addWeeks,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
   format,
   isSameDay,
   isSameMonth,
+  isValid,
+  parse,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
@@ -39,7 +43,7 @@ export type MonthDay = {
   isToday: boolean;
 };
 
-export function buildMonthWeeks(reference: Date) {
+export function buildMonthWeeks(reference: Date, today: Date = reference) {
   const monthStart = startOfMonth(reference, { in: inTimeZone });
   const gridStart = startOfWeek(monthStart, weekOptions);
   const gridEnd = endOfWeek(
@@ -60,7 +64,7 @@ export function buildMonthWeeks(reference: Date) {
         weekday: format(day, "EEE", { in: inTimeZone }).toUpperCase(),
         label: dayLabel(day),
         inMonth: isSameMonth(day, monthStart, { in: inTimeZone }),
-        isToday: isSameDay(day, reference, { in: inTimeZone }),
+        isToday: isSameDay(day, today, { in: inTimeZone }),
       })),
     );
   }
@@ -75,7 +79,7 @@ export type WeekDay = {
   isToday: boolean;
 };
 
-export function buildWeekDays(reference: Date) {
+export function buildWeekDays(reference: Date, today: Date = reference) {
   const start = startOfWeek(reference, weekOptions);
   const end = endOfWeek(reference, weekOptions);
 
@@ -83,13 +87,13 @@ export function buildWeekDays(reference: Date) {
     key: dayKey(day),
     weekday: format(day, "EEE", { in: inTimeZone }).toUpperCase(),
     label: format(day, "d", { in: inTimeZone }),
-    isToday: isSameDay(day, reference, { in: inTimeZone }),
+    isToday: isSameDay(day, today, { in: inTimeZone }),
   }));
 }
 
 export function weekHourLabels() {
-  return Array.from({ length: 15 }, (_, index) =>
-    format(new Date(2026, 0, 1, index + 9), "h a"),
+  return Array.from({ length: 24 }, (_, index) =>
+    format(new Date(2026, 0, 1, index), "h a"),
   );
 }
 
@@ -112,4 +116,26 @@ export function formatPeriodLabel(reference: Date, view: CalendarView) {
   }
 
   return `${startLabel} – ${endLabel}`;
+}
+
+export function shiftPeriod(
+  reference: Date,
+  view: CalendarView,
+  amount: number,
+) {
+  return view === CalendarView.Week
+    ? addWeeks(reference, amount, { in: inTimeZone })
+    : addMonths(reference, amount, { in: inTimeZone });
+}
+
+export function formatDateParam(date: Date) {
+  return dayKey(date);
+}
+
+export function parseDateParam(param: string | null, fallback: Date) {
+  if (!param) return fallback;
+
+  const parsed = parse(param, "yyyy-MM-dd", fallback, { in: inTimeZone });
+
+  return isValid(parsed) ? parsed : fallback;
 }
