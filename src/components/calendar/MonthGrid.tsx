@@ -1,13 +1,24 @@
 import type { MonthDay } from "@/lib/calendar-grid";
+import type { CalendarEvent } from "@/sever/event.type";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { WeekBars } from "./WeekBars";
+
 const border = "1px solid #e6e8ec";
+
+const barsTop = 28;
 
 const labelColor = (day: MonthDay) => (day.inMonth ? "#3c4043" : "#70757a");
 
-export function MonthGrid({ weeks }: { weeks: MonthDay[][] }) {
+export function MonthGrid({
+  weeks,
+  events = [],
+}: {
+  weeks: MonthDay[][];
+  events?: CalendarEvent[];
+}) {
   return (
     <Stack direction="column" sx={{ flex: 1 }}>
       <Box
@@ -41,6 +52,8 @@ export function MonthGrid({ weeks }: { weeks: MonthDay[][] }) {
           sx={{
             flex: 1,
             minHeight: 0,
+            position: "relative",
+            overflow: "hidden",
             display: "grid",
             gridTemplateColumns: "repeat(7, 1fr)",
             "&:not(:last-of-type)": { borderBottom: border },
@@ -75,6 +88,17 @@ export function MonthGrid({ weeks }: { weeks: MonthDay[][] }) {
               </Typography>
             </Stack>
           ))}
+          <Box
+            sx={{
+              position: "absolute",
+              top: barsTop,
+              left: 0,
+              right: 0,
+              pointerEvents: "none",
+            }}
+          >
+            <WeekBars week={week} events={events} />
+          </Box>
         </Box>
       ))}
     </Stack>

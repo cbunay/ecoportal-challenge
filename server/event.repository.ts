@@ -26,13 +26,18 @@ export const eventRepository = {
     const rangeStart = parseISO(start).getTime();
     const rangeEnd = parseISO(end).getTime();
 
-    return events.filter((event) => {
-      const eventStart = parseISO(event.startDate).getTime();
-      const eventEnd = parseISO(event.endDate).getTime();
+    return events
+      .filter((event) => {
+        const eventStart = parseISO(event.startDate).getTime();
+        const eventEnd = parseISO(event.endDate).getTime();
 
-      // Include events that overlap the requested range
-      return eventStart < rangeEnd && eventEnd > rangeStart;
-    });
+        // Include events that overlap the requested range
+        return eventStart < rangeEnd && eventEnd > rangeStart;
+      })
+      .sort(
+        (a, b) =>
+          parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime(),
+      );
   },
 
   async create(data: CreateEventInput): Promise<CalendarEvent> {
