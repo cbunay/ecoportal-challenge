@@ -18,12 +18,13 @@ import { useCalendarDispatch, useCalendarSelector } from "@/store/hooks";
 import { useGetEventsQuery } from "@/store/features/events/events.api";
 import type { CalendarEvent } from "@/sever/event.type";
 
+import { CreateEventDialog, type EventDraft } from "./CreateEventDialog";
 import { MonthGrid } from "./MonthGrid";
 import { ViewEventDialog } from "./ViewEventDialog";
 import { WeekGrid } from "./WeekGrid";
 import LinearProgress from "@mui/material/LinearProgress";
 import { useSnackbar } from "notistack";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 
 export function CalendarBoard() {
@@ -31,6 +32,7 @@ export function CalendarBoard() {
   const { view } = useParams<{ view: CalendarView }>();
   const focusedDate = parseDateParam(useSearchParams().get("date"), today);
 
+  const [draft, setDraft] = useState<EventDraft | null>(null);
   const dispatch = useCalendarDispatch();
   const selected = useCalendarSelector((state) => state.calendar.selectedEvent);
 
@@ -60,9 +62,14 @@ export function CalendarBoard() {
         days={buildWeekDays(focusedDate, today)}
         hours={weekHourLabels()}
         offsetLabel={timeZoneOffsetLabel(today)}
+        onCreate={setDraft}
       />
     ) : (
-      <MonthGrid events={events} weeks={buildMonthWeeks(focusedDate, today)} />
+      <MonthGrid
+        events={events}
+        weeks={buildMonthWeeks(focusedDate, today)}
+        onCreate={setDraft}
+      />
     );
 
   return (
@@ -74,6 +81,9 @@ export function CalendarBoard() {
         />
       )}
       {grid}
+      {draft && (
+        <CreateEventDialog draft={draft} onClose={() => setDraft(null)} />
+      )}
       {selected && (
         <ViewEventDialog
           event={selected}

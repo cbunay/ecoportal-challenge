@@ -75,7 +75,12 @@ export function EditEventDialog({ event, onClose }: Props) {
     onClose();
   }
 
-  const timeField = { sx: { width: 120 } };
+  const timeField = { sx: { width: 110 } };
+  const smallText = {
+    inputLabel: { shrink: true, sx: { fontSize: 13 } },
+    input: { sx: { fontSize: 13 } },
+    formHelperText: { sx: { fontSize: 11 } },
+  };
 
   return (
     <DraggableDialog open onClose={onClose}>
@@ -89,10 +94,10 @@ export function EditEventDialog({ event, onClose }: Props) {
           "&:active": { cursor: "grabbing" },
         }}
       >
-        <DragHandleIcon color="action" />
+        <DragHandleIcon fontSize="small" color="action" />
         <Box>
           <IconButton aria-label="Close" onClick={onClose} size="small">
-            <CloseIcon />
+            <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
       </DialogTitle>
@@ -104,6 +109,7 @@ export function EditEventDialog({ event, onClose }: Props) {
             )}
             <TextField
               variant="standard"
+              size="small"
               placeholder="Add title"
               {...register("name", {
                 validate: (v) => v.trim() !== "" || "Name is required",
@@ -113,13 +119,14 @@ export function EditEventDialog({ event, onClose }: Props) {
               fullWidth
               slotProps={{
                 htmlInput: { "aria-label": "Name" },
-                input: { sx: { fontSize: 22 } },
+                input: { sx: { fontSize: 16 } },
               }}
             />
             <Box>
               <Chip
                 label="Meeting"
-                sx={{ bgcolor: "#c2e7ff", color: "#001d35", fontSize: 14 }}
+                size="small"
+                sx={{ bgcolor: "#c2e7ff", color: "#001d35", fontSize: 12 }}
               />
             </Box>
           </Stack>
@@ -128,7 +135,7 @@ export function EditEventDialog({ event, onClose }: Props) {
             spacing={2}
             sx={{ mt: 3, alignItems: "center" }}
           >
-            <AccessTimeIcon sx={{ width: 32 }} />
+            <AccessTimeIcon fontSize="small" sx={{ width: 32 }} />
             <TextField
               type="date"
               size="small"
@@ -136,7 +143,7 @@ export function EditEventDialog({ event, onClose }: Props) {
               {...register("date", { required: "Date is required" })}
               error={Boolean(errors.date)}
               helperText={errors.date?.message}
-              slotProps={{ inputLabel: { shrink: true } }}
+              slotProps={smallText}
             />
             <TextField
               type="time"
@@ -145,7 +152,7 @@ export function EditEventDialog({ event, onClose }: Props) {
               {...register("startTime", { required: "Start time is required" })}
               error={Boolean(errors.startTime)}
               helperText={errors.startTime?.message}
-              slotProps={{ inputLabel: { shrink: true } }}
+              slotProps={smallText}
               {...timeField}
             />
             <TextField
@@ -159,7 +166,7 @@ export function EditEventDialog({ event, onClose }: Props) {
               })}
               error={Boolean(errors.endTime)}
               helperText={errors.endTime?.message}
-              slotProps={{ inputLabel: { shrink: true } }}
+              slotProps={smallText}
               {...timeField}
             />
           </Stack>
@@ -168,8 +175,9 @@ export function EditEventDialog({ event, onClose }: Props) {
           <Button
             type="submit"
             variant="contained"
+            size="small"
             disabled={isSubmitting}
-            sx={{ borderRadius: 999, px: 3, textTransform: "none" }}
+            sx={{ borderRadius: 999, px: 3, textTransform: "none", color: "#fff" }}
           >
             Save
           </Button>

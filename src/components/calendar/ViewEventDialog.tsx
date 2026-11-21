@@ -53,14 +53,14 @@ export function ViewEventDialog({ event, onClose }: Props) {
           "&:active": { cursor: "grabbing" },
         }}
       >
-        <DragHandleIcon color="action" />
+        <DragHandleIcon fontSize="small" color="action" />
         <Box>
           <IconButton
             aria-label="Edit event"
             onClick={() => setEditing(true)}
             size="small"
           >
-            <EditIcon />
+            <EditIcon fontSize="small" />
           </IconButton>
           <IconButton
             aria-label="Remove event"
@@ -68,28 +68,29 @@ export function ViewEventDialog({ event, onClose }: Props) {
             disabled={isRemoving}
             size="small"
           >
-            <DeleteIcon />
+            <DeleteIcon fontSize="small" />
           </IconButton>
           <IconButton aria-label="Close" onClick={onClose} size="small">
-            <CloseIcon />
+            <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pl: 6 }}>
-          <Typography component="h2" sx={{ fontSize: 22 }}>
+          <Typography component="h2" sx={{ fontSize: 16 }}>
             {event.name}
           </Typography>
           <Box>
             <Chip
               label="Meeting"
-              sx={{ bgcolor: "#c2e7ff", color: "#001d35", fontSize: 14 }}
+              size="small"
+              sx={{ bgcolor: "#c2e7ff", color: "#001d35", fontSize: 12 }}
             />
           </Box>
         </Stack>
         <Stack direction="row" spacing={2} sx={{ mt: 3, alignItems: "center" }}>
-          <AccessTimeIcon sx={{ width: 32 }} />
-          <Typography sx={{ fontSize: 14 }}>
+          <AccessTimeIcon fontSize="small" sx={{ width: 32 }} />
+          <Typography sx={{ fontSize: 13 }}>
             {eventRangeLabel(event)}
           </Typography>
         </Stack>

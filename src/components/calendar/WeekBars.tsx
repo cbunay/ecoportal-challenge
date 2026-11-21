@@ -46,7 +46,7 @@ export function WeekBars({
                 fontSize: 11,
                 lineHeight: `${barHeight}px`,
                 color: "#fff",
-                bgcolor: "#1A73E8",
+                bgcolor: "#709cd7",
                 pointerEvents: "auto",
                 cursor: "pointer",
                 borderTopLeftRadius: startsInWeek ? "4px" : 0,
