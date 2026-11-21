@@ -1,5 +1,6 @@
 import {
   buildWeekDays,
+  formatDateParam,
   eventTimeLabel,
   groupEventsByDay,
   isMultiDay,
@@ -13,10 +14,11 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import {
-  selectEvent,
   setDraftEvent,
+  type EventDraft,
 } from "@/store/features/calendar/calendar.slice";
 import { useCalendarDispatch } from "@/store/hooks";
+import { useParams, useRouter } from "next/navigation";
 
 import { WeekBars } from "./WeekBars";
 
@@ -33,6 +35,16 @@ export function WeekGrid({
   events?: CalendarEvent[];
 }) {
   const dispatch = useCalendarDispatch();
+  const router = useRouter();
+  const { view } = useParams<{ view: string }>();
+  const openEvent = (id: string) =>
+    router.push(
+      `/calendar/${view}/${formatDateParam(focusedDate)}/event/${id}`,
+    );
+  const openCreate = (draft: EventDraft) => {
+    dispatch(setDraftEvent(draft));
+    router.push(`/calendar/${view}/${formatDateParam(focusedDate)}/event/new`);
+  };
   const today = new Date();
   const days = buildWeekDays(focusedDate, today);
   const hours = weekHourLabels();
@@ -140,12 +152,10 @@ export function WeekGrid({
                   key={`${day.key}-${hour}`}
                   role="gridcell"
                   onClick={() =>
-                    dispatch(
-                      setDraftEvent({
-                        date: day.key,
-                        startTime: `${String(hourIndex).padStart(2, "0")}:00`,
-                      }),
-                    )
+                    openCreate({
+                      date: day.key,
+                      startTime: `${String(hourIndex).padStart(2, "0")}:00`,
+                    })
                   }
                   sx={{ borderLeft: border, cursor: "pointer" }}
                 />
@@ -174,7 +184,7 @@ export function WeekGrid({
                         title={`${event.name}, ${eventTimeLabel(event.startDate)}`}
                         role="button"
                         tabIndex={0}
-                        onClick={() => dispatch(selectEvent(event))}
+                        onClick={() => openEvent(event.id)}
                         sx={{
                           ...(event.id === "draft" && {
                             anchorName: "--draft",

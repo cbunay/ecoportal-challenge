@@ -1,11 +1,19 @@
-import { buildMonthWeeks, type MonthDay } from "@/lib/calendar-grid";
+import {
+  buildMonthWeeks,
+  formatDateParam,
+  type MonthDay,
+} from "@/lib/calendar-grid";
 import type { CalendarEvent } from "@/sever/event.type";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { setDraftEvent } from "@/store/features/calendar/calendar.slice";
+import {
+  setDraftEvent,
+  type EventDraft,
+} from "@/store/features/calendar/calendar.slice";
 import { useCalendarDispatch } from "@/store/hooks";
+import { useParams, useRouter } from "next/navigation";
 
 import { WeekBars } from "./WeekBars";
 
@@ -23,6 +31,12 @@ export function MonthGrid({
   events?: CalendarEvent[];
 }) {
   const dispatch = useCalendarDispatch();
+  const router = useRouter();
+  const { view } = useParams<{ view: string }>();
+  const openCreate = (draft: EventDraft) => {
+    dispatch(setDraftEvent(draft));
+    router.push(`/calendar/${view}/${formatDateParam(focusedDate)}/event/new`);
+  };
   const weeks = buildMonthWeeks(focusedDate, new Date());
 
   return (
@@ -70,7 +84,7 @@ export function MonthGrid({
               key={day.key}
               role="gridcell"
               aria-current={day.isToday ? "date" : undefined}
-              onClick={() => dispatch(setDraftEvent({ date: day.key }))}
+              onClick={() => openCreate({ date: day.key })}
               sx={{
                 cursor: "pointer",
                 minWidth: 0,

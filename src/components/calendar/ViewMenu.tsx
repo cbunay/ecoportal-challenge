@@ -18,9 +18,7 @@ export function ViewMenu() {
       size="small"
       inputProps={{ "aria-label": "View" }}
       onChange={(event) =>
-        router.push(
-          `/calendar/${event.target.value}${date ? `/${date}` : ""}`,
-        )
+        router.push(`/calendar/${event.target.value}${date ? `/${date}` : ""}`)
       }
       sx={{ ml: "auto", borderRadius: 999 }}
     >

@@ -7,19 +7,10 @@ import {
   weekRange,
 } from "@/lib/calendar-grid";
 
-import {
-  clearDraftEvent,
-  clearActiveEvent,
-  selectDraftEvent,
-  selectActiveEvent,
-} from "@/store/features/calendar/calendar.slice";
-import { useCalendarDispatch, useCalendarSelector } from "@/store/hooks";
+import { selectDraftEvent } from "@/store/features/calendar/calendar.slice";
+import { useCalendarSelector } from "@/store/hooks";
 import { useGetEventsQuery } from "@/store/features/events/events.api";
-import { useState } from "react";
-import { CreateEventDialog } from "./CreateEventDialog";
-import { EditEventDialog } from "./EditEventDialog";
 import { MonthGrid } from "./MonthGrid";
-import { ViewEventDialog } from "./ViewEventDialog";
 import { WeekGrid } from "./WeekGrid";
 import LinearProgress from "@mui/material/LinearProgress";
 import Alert from "@mui/material/Alert";
@@ -28,11 +19,8 @@ import { useParams } from "next/navigation";
 import { useFocusedDate } from "@/lib/use-focused-date";
 
 export function CalendarBoard() {
-  const dispatch = useCalendarDispatch();
-  const [editing, setEditing] = useState(false);
   const { view } = useParams<{ view: CalendarView }>();
   const focusedDate = useFocusedDate();
-  const activeEvent = useCalendarSelector(selectActiveEvent);
   const draftEvent = useCalendarSelector(selectDraftEvent);
   const previewEvent = draftEvent && draftToEvent(draftEvent);
 
@@ -40,18 +28,13 @@ export function CalendarBoard() {
     view === CalendarView.Week
       ? weekRange(focusedDate)
       : monthRange(focusedDate);
-      
+
   const {
     data: events = [],
     isFetching,
     isError,
     refetch,
   } = useGetEventsQuery(range);
-
-  function closeActiveEvent() {
-    setEditing(false);
-    dispatch(clearActiveEvent());
-  }
 
   const visibleEvents = previewEvent ? [...events, previewEvent] : events;
 
@@ -83,22 +66,6 @@ export function CalendarBoard() {
         </Alert>
       )}
       {grid}
-      {draftEvent && (
-        <CreateEventDialog
-          draftEvent={draftEvent}
-          onClose={() => dispatch(clearDraftEvent())}
-        />
-      )}
-      {activeEvent &&
-        (editing ? (
-          <EditEventDialog event={activeEvent} onClose={closeActiveEvent} />
-        ) : (
-          <ViewEventDialog
-            event={activeEvent}
-            onEdit={() => setEditing(true)}
-            onClose={closeActiveEvent}
-          />
-        ))}
     </>
   );
 }

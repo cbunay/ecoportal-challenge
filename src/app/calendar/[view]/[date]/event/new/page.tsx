@@ -16,15 +16,20 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
+import { useParams, useRouter } from "next/navigation";
+
 import {
+  clearDraftEvent,
+  selectDraftEvent,
   setDraftEvent,
   type EventDraft,
 } from "@/store/features/calendar/calendar.slice";
-import { useCalendarDispatch } from "@/store/hooks";
+import { useCalendarDispatch, useCalendarSelector } from "@/store/hooks";
+import { useFocusedDate } from "@/lib/use-focused-date";
 
 import { fromInputValue, toInputValue } from "@/lib/calendar-grid";
 import { useSnackbar } from "notistack";
-import { DraggableDialog } from "./DraggableDialog";
+import { DraggableDialog } from "@/components/calendar/DraggableDialog";
 import { useCreateEventMutation } from "@/store/features/events/events.api";
 import { EventType } from "@/sever/event.type";
 
@@ -34,8 +39,6 @@ type FormValues = {
   startTime: string;
   endTime: string;
 };
-
-type Props = { onClose: () => void; draftEvent: EventDraft };
 
 function defaultTimes(draftEvent: EventDraft) {
   const { date } = draftEvent;
@@ -47,7 +50,22 @@ function defaultTimes(draftEvent: EventDraft) {
   return { date, startTime, endTime };
 }
 
-export function CreateEventDialog({ onClose, draftEvent }: Props) {
+export default function CreateEventPage() {
+  const dispatch = useCalendarDispatch();
+  const router = useRouter();
+  const { view, date } = useParams<{ view: string; date: string }>();
+  const focusedDate = useFocusedDate();
+  const draft = useCalendarSelector(selectDraftEvent);
+
+  const draftEvent: EventDraft = draft ?? {
+    date: toInputValue(focusedDate).split("T")[0],
+  };
+
+  function onClose() {
+    dispatch(clearDraftEvent());
+    router.push(`/calendar/${view}/${date}`);
+  }
+
   const [createEvent] = useCreateEventMutation();
   const { enqueueSnackbar } = useSnackbar();
   const {
@@ -63,8 +81,6 @@ export function CreateEventDialog({ onClose, draftEvent }: Props) {
     },
   });
 
-  const dispatch = useCalendarDispatch();
-  // Keep the grid preview in sync with the form.
   const syncDraft = () => {
     const { name, date, startTime, endTime } = getValues();
     if (date && startTime) {

@@ -7,9 +7,6 @@ import Draggable from "react-draggable";
 
 const AnchorToDraft = createContext(false);
 
-// CSS anchor positioning: the draft event in the grid declares
-// `anchor-name: --draft`; the browser places the paper beside it and flips
-// to the left when there is no room on the right.
 const besideDraft = {
   position: "fixed",
   margin: 0,
@@ -18,7 +15,6 @@ const besideDraft = {
   positionTryFallbacks: "flip-inline",
 } as const;
 
-// Drag by the DialogTitle; buttons inside it stay clickable.
 function DraggablePaper(props: PaperProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const anchored = useContext(AnchorToDraft);

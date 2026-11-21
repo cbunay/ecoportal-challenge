@@ -13,26 +13,37 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { useParams, useRouter } from "next/navigation";
+
 import { eventRangeLabel } from "@/lib/calendar-grid";
-import { useDeleteEventMutation } from "@/store/features/events/events.api";
-import type { CalendarEvent } from "@/sever/event.type";
+import {
+  useDeleteEventMutation,
+  useGetEventQuery,
+} from "@/store/features/events/events.api";
 
 import { useSnackbar } from "notistack";
-import { DraggableDialog } from "./DraggableDialog";
+import { DraggableDialog } from "@/components/calendar/DraggableDialog";
 
-type Props = {
-  event: CalendarEvent;
-  onEdit: () => void;
-  onClose: () => void;
-};
-
-export function ViewEventDialog({ event, onEdit, onClose }: Props) {
+export default function ViewEventPage() {
+  const router = useRouter();
+  const { view, date, id } = useParams<{
+    view: string;
+    date: string;
+    id: string;
+  }>();
+  const { data: event } = useGetEventQuery(id);
   const [deleteEvent, { isLoading: isRemoving }] = useDeleteEventMutation();
   const { enqueueSnackbar } = useSnackbar();
 
+  if (!event) return null;
+
+  const onEdit = () =>
+    router.push(`/calendar/${view}/${date}/event/${id}/edit`);
+  const onClose = () => router.push(`/calendar/${view}/${date}`);
+
   async function handleRemove() {
     try {
-      await deleteEvent(event.id).unwrap();
+      await deleteEvent(id).unwrap();
       enqueueSnackbar("Event deleted", { variant: "success" });
       onClose();
     } catch {
@@ -54,11 +65,7 @@ export function ViewEventDialog({ event, onEdit, onClose }: Props) {
       >
         <DragHandleIcon fontSize="small" color="action" />
         <Box>
-          <IconButton
-            aria-label="Edit event"
-            onClick={onEdit}
-            size="small"
-          >
+          <IconButton aria-label="Edit event" onClick={onEdit} size="small">
             <EditIcon fontSize="small" />
           </IconButton>
           <IconButton

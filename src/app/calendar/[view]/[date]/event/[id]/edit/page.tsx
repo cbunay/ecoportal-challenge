@@ -15,12 +15,17 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
+import { useParams, useRouter } from "next/navigation";
+
 import { fromInputValue, toInputValue } from "@/lib/calendar-grid";
-import { useUpdateEventMutation } from "@/store/features/events/events.api";
+import {
+  useGetEventQuery,
+  useUpdateEventMutation,
+} from "@/store/features/events/events.api";
 import { EventType, type CalendarEvent } from "@/sever/event.type";
 
 import { useSnackbar } from "notistack";
-import { DraggableDialog } from "./DraggableDialog";
+import { DraggableDialog } from "@/components/calendar/DraggableDialog";
 
 type FormValues = {
   name: string;
@@ -29,15 +34,38 @@ type FormValues = {
   endTime: string;
 };
 
-type Props = { event: CalendarEvent; onClose: () => void };
-
 function eventDefaults(event: CalendarEvent): FormValues {
   const [date, startTime] = toInputValue(new Date(event.startDate)).split("T");
   const [, endTime] = toInputValue(new Date(event.endDate)).split("T");
   return { name: event.name, date, startTime, endTime };
 }
 
-export function EditEventDialog({ event, onClose }: Props) {
+export default function EditEventPage() {
+  const router = useRouter();
+  const { view, date, id } = useParams<{
+    view: string;
+    date: string;
+    id: string;
+  }>();
+  const { data: event } = useGetEventQuery(id);
+
+  if (!event) return null;
+
+  return (
+    <EditEventForm
+      event={event}
+      onClose={() => router.push(`/calendar/${view}/${date}`)}
+    />
+  );
+}
+
+function EditEventForm({
+  event,
+  onClose,
+}: {
+  event: CalendarEvent;
+  onClose: () => void;
+}) {
   const [updateEvent] = useUpdateEventMutation();
   const { enqueueSnackbar } = useSnackbar();
   const {

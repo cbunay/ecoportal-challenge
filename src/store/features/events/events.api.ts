@@ -17,6 +17,10 @@ export const eventsApi = createApi({
       query: ({ start, end }) => ({ url: "events", params: { start, end } }),
       providesTags: ["Event"],
     }),
+    getEvent: builder.query<CalendarEvent, string>({
+      query: (id) => `events/${id}`,
+      providesTags: ["Event"],
+    }),
     createEvent: builder.mutation<CalendarEvent, CreateEventInput>({
       query: (body) => ({ url: "events", method: "POST", body }),
       invalidatesTags: ["Event"],
@@ -41,6 +45,7 @@ export const eventsApi = createApi({
 
 export const {
   useGetEventsQuery,
+  useGetEventQuery,
   useCreateEventMutation,
   useUpdateEventMutation,
   useDeleteEventMutation,

@@ -9,23 +9,33 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 
-import { toInputValue } from "@/lib/calendar-grid";
+import { formatDateParam, toInputValue } from "@/lib/calendar-grid";
 import { useFocusedDate } from "@/lib/use-focused-date";
-import { setDraftEvent } from "@/store/features/calendar/calendar.slice";
+import {
+  setDraftEvent,
+  type EventDraft,
+} from "@/store/features/calendar/calendar.slice";
 import { useCalendarDispatch } from "@/store/hooks";
+import { useParams, useRouter } from "next/navigation";
 
 export function Sidebar() {
   const createButton = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const dispatch = useCalendarDispatch();
+  const router = useRouter();
+  const { view } = useParams<{ view: string }>();
   const focusedDate = useFocusedDate();
+  const openCreate = (draft: EventDraft) => {
+    dispatch(setDraftEvent(draft));
+    router.push(`/calendar/${view}/${formatDateParam(focusedDate)}/event/new`);
+  };
 
   const handleCreateMeeting = () => {
     setMenuOpen(false);
     const now = new Date();
     const [date] = toInputValue(focusedDate).split("T");
     const [, startTime] = toInputValue(now).split("T");
-    dispatch(setDraftEvent({ date, startTime }));
+    openCreate({ date, startTime });
   };
   return (
     <Box

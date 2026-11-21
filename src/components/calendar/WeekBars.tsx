@@ -1,7 +1,11 @@
-import { eventTimeLabel, layoutWeekEvents } from "@/lib/calendar-grid";
+import {
+  eventTimeLabel,
+  formatDateParam,
+  layoutWeekEvents,
+} from "@/lib/calendar-grid";
+import { useFocusedDate } from "@/lib/use-focused-date";
 import type { CalendarEvent } from "@/sever/event.type";
-import { selectEvent } from "@/store/features/calendar/calendar.slice";
-import { useCalendarDispatch } from "@/store/hooks";
+import { useParams, useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
@@ -14,7 +18,13 @@ export function WeekBars({
   week: { key: string }[];
   events: CalendarEvent[];
 }) {
-  const dispatch = useCalendarDispatch();
+  const router = useRouter();
+  const { view } = useParams<{ view: string }>();
+  const focusedDate = useFocusedDate();
+  const openEvent = (id: string) =>
+    router.push(
+      `/calendar/${view}/${formatDateParam(focusedDate)}/event/${id}`,
+    );
 
   return (
     <Box
@@ -36,7 +46,7 @@ export function WeekBars({
               title={event.name}
               role="button"
               tabIndex={0}
-              onClick={() => dispatch(selectEvent(event))}
+              onClick={() => openEvent(event.id)}
               sx={{
                 ...(event.id === "draft" && { anchorName: "--draft" }),
                 gridColumn: `${colStart + 1} / ${colEnd + 2}`,
