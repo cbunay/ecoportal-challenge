@@ -8,12 +8,14 @@ import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { eventRangeLabel } from "@/lib/calendar-grid";
+import { useDeleteEventMutation } from "@/store/features/events/events.api";
 import type { CalendarEvent } from "@/sever/event.type";
 
 import { DraggableDialog } from "./DraggableDialog";
@@ -23,6 +25,16 @@ type Props = { event: CalendarEvent; onClose: () => void };
 
 export function ViewEventDialog({ event, onClose }: Props) {
   const [editing, setEditing] = useState(false);
+  const [deleteEvent, { isLoading: isRemoving }] = useDeleteEventMutation();
+
+  async function handleRemove() {
+    try {
+      await deleteEvent(event.id).unwrap();
+      onClose();
+    } catch {
+      // keep the dialog open so the user can retry
+    }
+  }
 
   if (editing) return <EditEventDialog event={event} onClose={onClose} />;
 
@@ -46,6 +58,14 @@ export function ViewEventDialog({ event, onClose }: Props) {
             size="small"
           >
             <EditIcon />
+          </IconButton>
+          <IconButton
+            aria-label="Remove event"
+            onClick={handleRemove}
+            disabled={isRemoving}
+            size="small"
+          >
+            <DeleteIcon />
           </IconButton>
           <IconButton aria-label="Close" onClick={onClose} size="small">
             <CloseIcon />
