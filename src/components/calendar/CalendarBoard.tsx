@@ -21,6 +21,9 @@ import type { CalendarEvent } from "@/sever/event.type";
 import { MonthGrid } from "./MonthGrid";
 import { ViewEventDialog } from "./ViewEventDialog";
 import { WeekGrid } from "./WeekGrid";
+import LinearProgress from "@mui/material/LinearProgress";
+import { useSnackbar } from "notistack";
+import { useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 
 export function CalendarBoard() {
@@ -35,7 +38,14 @@ export function CalendarBoard() {
     view === CalendarView.Week
       ? weekRange(focusedDate)
       : monthRange(focusedDate);
-  const { data: events = [] } = useGetEventsQuery(range);
+  const { data: events = [], isFetching, isError } = useGetEventsQuery(range);
+
+  const { enqueueSnackbar } = useSnackbar();
+  useEffect(() => {
+    if (isError) {
+      enqueueSnackbar("Could not load events", { variant: "error" });
+    }
+  }, [isError, enqueueSnackbar]);
 
   const eventsByDay: Record<string, CalendarEvent[]> = {};
   for (const event of events.filter((event) => !isMultiDay(event))) {
@@ -57,6 +67,12 @@ export function CalendarBoard() {
 
   return (
     <>
+      {isFetching && (
+        <LinearProgress
+          aria-label="Loading events"
+          sx={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 1 }}
+        />
+      )}
       {grid}
       {selected && (
         <ViewEventDialog

@@ -19,6 +19,7 @@ import { fromInputValue, toInputValue } from "@/lib/calendar-grid";
 import { useUpdateEventMutation } from "@/store/features/events/events.api";
 import { EventType, type CalendarEvent } from "@/sever/event.type";
 
+import { useSnackbar } from "notistack";
 import { DraggableDialog } from "./DraggableDialog";
 
 type FormValues = {
@@ -38,6 +39,7 @@ function eventDefaults(event: CalendarEvent): FormValues {
 
 export function EditEventDialog({ event, onClose }: Props) {
   const [updateEvent] = useUpdateEventMutation();
+  const { enqueueSnackbar } = useSnackbar();
   const {
     register,
     handleSubmit,
@@ -69,6 +71,7 @@ export function EditEventDialog({ event, onClose }: Props) {
       });
       return;
     }
+    enqueueSnackbar("Event updated", { variant: "success" });
     onClose();
   }
 

@@ -18,6 +18,7 @@ import { eventRangeLabel } from "@/lib/calendar-grid";
 import { useDeleteEventMutation } from "@/store/features/events/events.api";
 import type { CalendarEvent } from "@/sever/event.type";
 
+import { useSnackbar } from "notistack";
 import { DraggableDialog } from "./DraggableDialog";
 import { EditEventDialog } from "./EditEventDialog";
 
@@ -26,13 +27,15 @@ type Props = { event: CalendarEvent; onClose: () => void };
 export function ViewEventDialog({ event, onClose }: Props) {
   const [editing, setEditing] = useState(false);
   const [deleteEvent, { isLoading: isRemoving }] = useDeleteEventMutation();
+  const { enqueueSnackbar } = useSnackbar();
 
   async function handleRemove() {
     try {
       await deleteEvent(event.id).unwrap();
+      enqueueSnackbar("Event deleted", { variant: "success" });
       onClose();
     } catch {
-      // keep the dialog open so the user can retry
+      enqueueSnackbar("Could not delete the event", { variant: "error" });
     }
   }
 

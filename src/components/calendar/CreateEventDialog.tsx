@@ -23,6 +23,7 @@ import {
   parseDateParam,
   toInputValue,
 } from "@/lib/calendar-grid";
+import { useSnackbar } from "notistack";
 import { DraggableDialog } from "./DraggableDialog";
 import { useCreateEventMutation } from "@/store/features/events/events.api";
 import { EventType } from "@/sever/event.type";
@@ -46,6 +47,7 @@ function defaultTimes(focusedDate: Date) {
 
 export function CreateEventDialog({ onClose }: Props) {
   const [createEvent] = useCreateEventMutation();
+  const { enqueueSnackbar } = useSnackbar();
   const dateParam = useSearchParams().get("date");
   const {
     register,
@@ -85,6 +87,7 @@ export function CreateEventDialog({ onClose }: Props) {
       });
       return;
     }
+    enqueueSnackbar("Event created", { variant: "success" });
     onClose();
   }
 
