@@ -15,7 +15,7 @@ import {
 export function PeriodNav() {
   const { view } = useParams<{ view: CalendarView }>();
   const router = useRouter();
-  const focusedDate = parseDateParam(useSearchParams().get("date"), new Date());
+  const focusedDate = parseDateParam(useSearchParams().get("date"));
 
   const go = (amount: number) =>
     router.push(

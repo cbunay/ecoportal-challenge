@@ -13,9 +13,7 @@ export default function CalendarLayout({ children }: { children: ReactNode }) {
           <Stack direction="row" sx={{ height: "100dvh" }}>
             <Sidebar />
             <Stack direction="column" sx={{ flex: 1 }}>
-              <Suspense fallback={<div>Loading...</div>}>
-                <CalendarToolbar />
-              </Suspense>
+              <CalendarToolbar />
               <Stack
                 component="main"
                 sx={{
@@ -28,7 +26,7 @@ export default function CalendarLayout({ children }: { children: ReactNode }) {
                   position: "relative",
                 }}
               >
-                <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+                {children}
               </Stack>
             </Stack>
           </Stack>

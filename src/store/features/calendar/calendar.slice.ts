@@ -3,17 +3,22 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { calendarTimeZone } from "@/lib/defaults";
 import type { CalendarEvent } from "@/sever/event.type";
 
-export type EventDraft = { date: string; startTime?: string };
+export type EventDraft = {
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  name?: string;
+};
 
 export type CalendarState = {
   timeZone: string;
-  selectedEvent: CalendarEvent | null;
+  activeEvent: CalendarEvent | null;
   draftEvent: EventDraft | null;
 };
 
 const initialState: CalendarState = {
   timeZone: calendarTimeZone,
-  selectedEvent: null,
+  activeEvent: null,
   draftEvent: null,
 };
 
@@ -22,10 +27,10 @@ const calendarSlice = createSlice({
   initialState,
   reducers: {
     selectEvent(state, action: PayloadAction<CalendarEvent>) {
-      state.selectedEvent = action.payload;
+      state.activeEvent = action.payload;
     },
-    clearSelectedEvent(state) {
-      state.selectedEvent = null;
+    clearActiveEvent(state) {
+      state.activeEvent = null;
     },
     setDraftEvent(state, action: PayloadAction<EventDraft>) {
       state.draftEvent = action.payload;
@@ -34,12 +39,13 @@ const calendarSlice = createSlice({
       state.draftEvent = null;
     },
   },
+  selectors: {
+    selectActiveEvent: (state) => state.activeEvent,
+    selectDraftEvent: (state) => state.draftEvent,
+  },
 });
 
-export const {
-  selectEvent,
-  clearSelectedEvent,
-  setDraftEvent,
-  clearDraftEvent,
-} = calendarSlice.actions;
+export const { selectEvent, clearActiveEvent, setDraftEvent, clearDraftEvent } =
+  calendarSlice.actions;
+export const { selectActiveEvent, selectDraftEvent } = calendarSlice.selectors;
 export const calendarReducer = calendarSlice.reducer;

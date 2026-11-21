@@ -11,7 +11,7 @@ import { useParams, useSearchParams } from "next/navigation";
 
 export function PeriodLabel() {
   const { view } = useParams<{ view: CalendarView }>();
-  const focusedDate = parseDateParam(useSearchParams().get("date"), new Date());
+  const focusedDate = parseDateParam(useSearchParams().get("date"));
 
   return (
     <Typography

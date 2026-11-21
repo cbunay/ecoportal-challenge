@@ -1,4 +1,4 @@
-import type { MonthDay } from "@/lib/calendar-grid";
+import { buildMonthWeeks, type MonthDay } from "@/lib/calendar-grid";
 import type { CalendarEvent } from "@/sever/event.type";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -16,13 +16,14 @@ const barsTop = 28;
 const labelColor = (day: MonthDay) => (day.inMonth ? "#3c4043" : "#70757a");
 
 export function MonthGrid({
-  weeks,
+  focusedDate,
   events = [],
 }: {
-  weeks: MonthDay[][];
+  focusedDate: Date;
   events?: CalendarEvent[];
 }) {
   const dispatch = useCalendarDispatch();
+  const weeks = buildMonthWeeks(focusedDate, new Date());
 
   return (
     <Stack direction="column" sx={{ flex: 1 }}>

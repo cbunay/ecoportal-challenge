@@ -1,7 +1,11 @@
 import {
+  buildWeekDays,
   eventTimeLabel,
+  groupEventsByDay,
+  isMultiDay,
   layoutDayEvents,
-  type WeekDay,
+  timeZoneOffsetLabel,
+  weekHourLabels,
 } from "@/lib/calendar-grid";
 import type { CalendarEvent } from "@/sever/event.type";
 import Box from "@mui/material/Box";
@@ -22,19 +26,19 @@ const hourHeight = 48;
 const minEventHeight = 22;
 
 export function WeekGrid({
-  days,
-  hours,
-  offsetLabel,
-  eventsByDay = {},
-  multiDayEvents = [],
+  focusedDate,
+  events = [],
 }: {
-  days: WeekDay[];
-  hours: string[];
-  offsetLabel: string;
-  eventsByDay?: Record<string, CalendarEvent[]>;
-  multiDayEvents?: CalendarEvent[];
+  focusedDate: Date;
+  events?: CalendarEvent[];
 }) {
   const dispatch = useCalendarDispatch();
+  const today = new Date();
+  const days = buildWeekDays(focusedDate, today);
+  const hours = weekHourLabels();
+  const offsetLabel = timeZoneOffsetLabel(today);
+  const eventsByDay = groupEventsByDay(events);
+  const multiDayEvents = events.filter(isMultiDay);
 
   return (
     <Stack
@@ -172,6 +176,9 @@ export function WeekGrid({
                         tabIndex={0}
                         onClick={() => dispatch(selectEvent(event))}
                         sx={{
+                          ...(event.id === "draft" && {
+                            anchorName: "--draft",
+                          }),
                           position: "absolute",
                           top: (startMinutes / 60) * hourHeight,
                           height: Math.max(

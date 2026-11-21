@@ -16,15 +16,13 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-import { useSearchParams } from "next/navigation";
-
-import type { EventDraft } from "@/store/features/calendar/calendar.slice";
-
 import {
-  fromInputValue,
-  parseDateParam,
-  toInputValue,
-} from "@/lib/calendar-grid";
+  setDraftEvent,
+  type EventDraft,
+} from "@/store/features/calendar/calendar.slice";
+import { useCalendarDispatch } from "@/store/hooks";
+
+import { fromInputValue, toInputValue } from "@/lib/calendar-grid";
 import { useSnackbar } from "notistack";
 import { DraggableDialog } from "./DraggableDialog";
 import { useCreateEventMutation } from "@/store/features/events/events.api";
@@ -37,12 +35,11 @@ type FormValues = {
   endTime: string;
 };
 
-type Props = { onClose: () => void; draftEvent?: EventDraft };
+type Props = { onClose: () => void; draftEvent: EventDraft };
 
-function defaultTimes(focusedDate: Date, draftEvent?: EventDraft) {
-  const [focusedDay] = toInputValue(focusedDate).split("T");
-  const date = draftEvent?.date ?? focusedDay;
-  const start = draftEvent?.startTime
+function defaultTimes(draftEvent: EventDraft) {
+  const { date } = draftEvent;
+  const start = draftEvent.startTime
     ? (fromInputValue(`${date}T${draftEvent.startTime}`) ?? new Date())
     : addHours(startOfHour(new Date()), 1);
   const [, startTime] = toInputValue(new Date(start)).split("T");
@@ -53,7 +50,6 @@ function defaultTimes(focusedDate: Date, draftEvent?: EventDraft) {
 export function CreateEventDialog({ onClose, draftEvent }: Props) {
   const [createEvent] = useCreateEventMutation();
   const { enqueueSnackbar } = useSnackbar();
-  const dateParam = useSearchParams().get("date");
   const {
     register,
     handleSubmit,
@@ -63,11 +59,21 @@ export function CreateEventDialog({ onClose, draftEvent }: Props) {
   } = useForm<FormValues>({
     defaultValues: {
       name: "",
-      ...defaultTimes(parseDateParam(dateParam, new Date()), draftEvent),
+      ...defaultTimes(draftEvent),
     },
   });
 
-  async function onSubmit({ name, date, startTime, endTime }: FormValues) {
+  const dispatch = useCalendarDispatch();
+  // Keep the grid preview in sync with the form.
+  const syncDraft = () => {
+    const { name, date, startTime, endTime } = getValues();
+    if (date && startTime) {
+      dispatch(setDraftEvent({ date, startTime, endTime, name }));
+    }
+  };
+
+  async function onSubmit(values: FormValues) {
+    const { date, startTime, endTime } = values;
     const startDate = fromInputValue(`${date}T${startTime}`);
     const endDate = fromInputValue(`${date}T${endTime}`);
     if (!startDate || !endDate) {
@@ -76,7 +82,7 @@ export function CreateEventDialog({ onClose, draftEvent }: Props) {
     }
 
     const result = await createEvent({
-      name: name.trim(),
+      name: values.name.trim(),
       type: EventType.Meeting,
       startDate,
       endDate,
@@ -104,7 +110,7 @@ export function CreateEventDialog({ onClose, draftEvent }: Props) {
   };
 
   return (
-    <DraggableDialog open onClose={onClose}>
+    <DraggableDialog open onClose={onClose} anchorToDraft>
       <DialogTitle
         sx={{
           display: "flex",
@@ -133,6 +139,7 @@ export function CreateEventDialog({ onClose, draftEvent }: Props) {
               size="small"
               placeholder="Add title"
               {...register("name", {
+                onChange: syncDraft,
                 validate: (v) => v.trim() !== "" || "Name is required",
               })}
               error={Boolean(errors.name)}
@@ -162,7 +169,10 @@ export function CreateEventDialog({ onClose, draftEvent }: Props) {
               type="date"
               size="small"
               label="Date"
-              {...register("date", { required: "Date is required" })}
+              {...register("date", {
+                required: "Date is required",
+                onChange: syncDraft,
+              })}
               error={Boolean(errors.date)}
               helperText={errors.date?.message}
               slotProps={smallText}
@@ -171,7 +181,10 @@ export function CreateEventDialog({ onClose, draftEvent }: Props) {
               type="time"
               size="small"
               label="Start"
-              {...register("startTime", { required: "Start time is required" })}
+              {...register("startTime", {
+                required: "Start time is required",
+                onChange: syncDraft,
+              })}
               error={Boolean(errors.startTime)}
               helperText={errors.startTime?.message}
               slotProps={smallText}
@@ -183,6 +196,7 @@ export function CreateEventDialog({ onClose, draftEvent }: Props) {
               label="End"
               {...register("endTime", {
                 required: "End time is required",
+                onChange: syncDraft,
                 validate: (v) =>
                   v > getValues("startTime") || "End must be after start",
               })}

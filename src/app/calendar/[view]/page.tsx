@@ -1,4 +1,3 @@
-import { CalendarBoard } from "@/components/calendar/CalendarBoard";
 import { CalendarView } from "@/lib/calendar-grid";
 
 export function generateStaticParams() {
@@ -6,5 +5,5 @@ export function generateStaticParams() {
 }
 
 export default function CalendarPage() {
-  return <CalendarBoard />;
+  return <></>;
 }

@@ -38,6 +38,7 @@ export function WeekBars({
               tabIndex={0}
               onClick={() => dispatch(selectEvent(event))}
               sx={{
+                ...(event.id === "draft" && { anchorName: "--draft" }),
                 gridColumn: `${colStart + 1} / ${colEnd + 2}`,
                 gridRow: lane + 1,
                 ml: startsInWeek ? "4px" : 0,

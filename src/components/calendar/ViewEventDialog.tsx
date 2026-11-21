@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
 import DialogContent from "@mui/material/DialogContent";
@@ -20,12 +19,14 @@ import type { CalendarEvent } from "@/sever/event.type";
 
 import { useSnackbar } from "notistack";
 import { DraggableDialog } from "./DraggableDialog";
-import { EditEventDialog } from "./EditEventDialog";
 
-type Props = { event: CalendarEvent; onClose: () => void };
+type Props = {
+  event: CalendarEvent;
+  onEdit: () => void;
+  onClose: () => void;
+};
 
-export function ViewEventDialog({ event, onClose }: Props) {
-  const [editing, setEditing] = useState(false);
+export function ViewEventDialog({ event, onEdit, onClose }: Props) {
   const [deleteEvent, { isLoading: isRemoving }] = useDeleteEventMutation();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -38,8 +39,6 @@ export function ViewEventDialog({ event, onClose }: Props) {
       enqueueSnackbar("Could not delete the event", { variant: "error" });
     }
   }
-
-  if (editing) return <EditEventDialog event={event} onClose={onClose} />;
 
   return (
     <DraggableDialog open onClose={onClose} maxWidth="xs">
@@ -57,7 +56,7 @@ export function ViewEventDialog({ event, onClose }: Props) {
         <Box>
           <IconButton
             aria-label="Edit event"
-            onClick={() => setEditing(true)}
+            onClick={onEdit}
             size="small"
           >
             <EditIcon fontSize="small" />

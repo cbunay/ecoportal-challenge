@@ -1,76 +1,65 @@
 "use client";
 
 import {
-  buildMonthWeeks,
-  buildWeekDays,
-  draftEventToEvent,
+  draftToEvent,
   CalendarView,
-  eventDayKey,
-  isMultiDay,
   monthRange,
   parseDateParam,
-  timeZoneOffsetLabel,
-  weekHourLabels,
   weekRange,
 } from "@/lib/calendar-grid";
 
 import {
   clearDraftEvent,
-  clearSelectedEvent,
+  clearActiveEvent,
+  selectDraftEvent,
+  selectActiveEvent,
 } from "@/store/features/calendar/calendar.slice";
 import { useCalendarDispatch, useCalendarSelector } from "@/store/hooks";
 import { useGetEventsQuery } from "@/store/features/events/events.api";
-import type { CalendarEvent } from "@/sever/event.type";
-
+import { useState } from "react";
 import { CreateEventDialog } from "./CreateEventDialog";
+import { EditEventDialog } from "./EditEventDialog";
 import { MonthGrid } from "./MonthGrid";
 import { ViewEventDialog } from "./ViewEventDialog";
 import { WeekGrid } from "./WeekGrid";
 import LinearProgress from "@mui/material/LinearProgress";
-import { useSnackbar } from "notistack";
-import { useEffect } from "react";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
 import { useParams, useSearchParams } from "next/navigation";
 
 export function CalendarBoard() {
-  const today = new Date();
-  const { view } = useParams<{ view: CalendarView }>();
-  const focusedDate = parseDateParam(useSearchParams().get("date"), today);
   const dispatch = useCalendarDispatch();
-  const selected = useCalendarSelector((state) => state.calendar.selectedEvent);
-  const draftEvent = useCalendarSelector((state) => state.calendar.draftEvent);
-
-  const preview = draftEvent && draftEventToEvent(draftEvent);
+  const [editing, setEditing] = useState(false);
+  const { view } = useParams<{ view: CalendarView }>();
+  const focusedDate = parseDateParam(useSearchParams().get("date"));
+  const activeEvent = useCalendarSelector(selectActiveEvent);
+  const draftEvent = useCalendarSelector(selectDraftEvent);
+  const previewEvent = draftEvent && draftToEvent(draftEvent);
 
   const range =
     view === CalendarView.Week
       ? weekRange(focusedDate)
       : monthRange(focusedDate);
-  const { data: events = [], isFetching, isError } = useGetEventsQuery(range);
+      
+  const {
+    data: events = [],
+    isFetching,
+    isError,
+    refetch,
+  } = useGetEventsQuery(range);
 
-  const { enqueueSnackbar } = useSnackbar();
-  useEffect(() => {
-    if (isError) {
-      enqueueSnackbar("Could not load events", { variant: "error" });
-    }
-  }, [isError, enqueueSnackbar]);
-
-  const shown = preview ? [...events, preview] : events;
-  const eventsByDay: Record<string, CalendarEvent[]> = {};
-  for (const event of shown.filter((event) => !isMultiDay(event))) {
-    (eventsByDay[eventDayKey(event.startDate)] ??= []).push(event);
+  function closeActiveEvent() {
+    setEditing(false);
+    dispatch(clearActiveEvent());
   }
+
+  const visibleEvents = previewEvent ? [...events, previewEvent] : events;
 
   const grid =
     view === CalendarView.Week ? (
-      <WeekGrid
-        eventsByDay={eventsByDay}
-        multiDayEvents={shown.filter(isMultiDay)}
-        days={buildWeekDays(focusedDate, today)}
-        hours={weekHourLabels()}
-        offsetLabel={timeZoneOffsetLabel(today)}
-      />
+      <WeekGrid events={visibleEvents} focusedDate={focusedDate} />
     ) : (
-      <MonthGrid events={shown} weeks={buildMonthWeeks(focusedDate, today)} />
+      <MonthGrid events={visibleEvents} focusedDate={focusedDate} />
     );
 
   return (
@@ -81,6 +70,18 @@ export function CalendarBoard() {
           sx={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 1 }}
         />
       )}
+      {isError && (
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => refetch()}>
+              Retry
+            </Button>
+          }
+        >
+          Could not load events
+        </Alert>
+      )}
       {grid}
       {draftEvent && (
         <CreateEventDialog
@@ -88,12 +89,16 @@ export function CalendarBoard() {
           onClose={() => dispatch(clearDraftEvent())}
         />
       )}
-      {selected && (
-        <ViewEventDialog
-          event={selected}
-          onClose={() => dispatch(clearSelectedEvent())}
-        />
-      )}
+      {activeEvent &&
+        (editing ? (
+          <EditEventDialog event={activeEvent} onClose={closeActiveEvent} />
+        ) : (
+          <ViewEventDialog
+            event={activeEvent}
+            onEdit={() => setEditing(true)}
+            onClose={closeActiveEvent}
+          />
+        ))}
     </>
   );
 }

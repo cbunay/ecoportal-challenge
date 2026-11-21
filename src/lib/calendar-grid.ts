@@ -11,6 +11,7 @@ import {
   isSameMonth,
   isValid,
   parse,
+  startOfDay,
   startOfHour,
   startOfMonth,
   startOfWeek,
@@ -135,12 +136,13 @@ export function formatDateParam(date: Date) {
   return dayKey(date);
 }
 
-export function parseDateParam(param: string | null, fallback: Date) {
-  if (!param) return fallback;
+export function parseDateParam(param: string | null) {
+  const today = startOfDay(new Date(), { in: inTimeZone });
+  const parsed = param
+    ? parse(param, "yyyy-MM-dd", today, { in: inTimeZone })
+    : today;
 
-  const parsed = parse(param, "yyyy-MM-dd", fallback, { in: inTimeZone });
-
-  return isValid(parsed) ? parsed : fallback;
+  return isValid(parsed) ? parsed : today;
 }
 
 const inputFormat = "yyyy-MM-dd'T'HH:mm";
@@ -161,12 +163,11 @@ function utcIso(date: Date) {
 
 export function monthRange(reference: Date) {
   const monthStart = startOfMonth(reference, { in: inTimeZone });
+  const mothEnd = endOfMonth(reference, { in: inTimeZone });
 
   return {
     start: utcIso(startOfWeek(monthStart, weekOptions)),
-    end: utcIso(
-      endOfWeek(endOfMonth(reference, { in: inTimeZone }), weekOptions),
-    ),
+    end: utcIso(endOfWeek(mothEnd, weekOptions)),
   };
 }
 
@@ -181,22 +182,30 @@ export function eventDayKey(iso: string) {
   return dayKey(new Date(iso));
 }
 
-export function draftEventToEvent(draftEvent: {
+export function draftToEvent(draftEvent: {
   date: string;
   startTime?: string;
+  endTime?: string;
+  name?: string;
 }) {
   const time =
     draftEvent.startTime ??
     format(addHours(startOfHour(new Date()), 1), "HH:mm", { in: inTimeZone });
   const startDate = fromInputValue(`${draftEvent.date}T${time}`);
   if (!startDate) return null;
-  const endDate = new Date(
-    new Date(startDate).getTime() + 3_600_000,
-  ).toISOString();
+  const typedEnd =
+    draftEvent.endTime &&
+    draftEvent.startTime &&
+    draftEvent.endTime > draftEvent.startTime
+      ? fromInputValue(`${draftEvent.date}T${draftEvent.endTime}`)
+      : null;
+  const endDate =
+    typedEnd ??
+    new Date(new Date(startDate).getTime() + 3_600_000).toISOString();
 
   return {
     id: "draft",
-    name: "(No title)",
+    name: draftEvent.name?.trim() || "(No title)",
     type: EventType.Meeting,
     startDate,
     endDate,
@@ -300,6 +309,20 @@ export function isMultiDay(event: CalendarEvent) {
   const { startKey, endKey } = eventDayRange(event);
 
   return startKey !== endKey;
+}
+
+export function groupEventsByDay(events: CalendarEvent[]) {
+  const byDay: Record<string, CalendarEvent[]> = {};
+
+  for (const event of events) {
+    if (isMultiDay(event)) continue;
+
+    const day = eventDayKey(event.startDate);
+    byDay[day] ??= [];
+    byDay[day].push(event);
+  }
+
+  return byDay;
 }
 
 export function layoutWeekEvents(
