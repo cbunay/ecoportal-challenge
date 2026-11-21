@@ -4,7 +4,9 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import type { EventDraft } from "./CreateEventDialog";
+import { setDraftEvent } from "@/store/features/calendar/calendar.slice";
+import { useCalendarDispatch } from "@/store/hooks";
+
 import { WeekBars } from "./WeekBars";
 
 const border = "1px solid #e6e8ec";
@@ -16,12 +18,12 @@ const labelColor = (day: MonthDay) => (day.inMonth ? "#3c4043" : "#70757a");
 export function MonthGrid({
   weeks,
   events = [],
-  onCreate,
 }: {
   weeks: MonthDay[][];
   events?: CalendarEvent[];
-  onCreate?: (draft: EventDraft) => void;
 }) {
+  const dispatch = useCalendarDispatch();
+
   return (
     <Stack direction="column" sx={{ flex: 1 }}>
       <Box
@@ -67,7 +69,7 @@ export function MonthGrid({
               key={day.key}
               role="gridcell"
               aria-current={day.isToday ? "date" : undefined}
-              onClick={() => onCreate?.({ date: day.key })}
+              onClick={() => dispatch(setDraftEvent({ date: day.key }))}
               sx={{
                 cursor: "pointer",
                 minWidth: 0,

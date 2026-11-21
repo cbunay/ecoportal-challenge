@@ -8,10 +8,12 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { selectEvent } from "@/store/features/calendar/calendar.slice";
+import {
+  selectEvent,
+  setDraftEvent,
+} from "@/store/features/calendar/calendar.slice";
 import { useCalendarDispatch } from "@/store/hooks";
 
-import type { EventDraft } from "./CreateEventDialog";
 import { WeekBars } from "./WeekBars";
 
 const border = "1px solid #e6e8ec";
@@ -25,14 +27,12 @@ export function WeekGrid({
   offsetLabel,
   eventsByDay = {},
   multiDayEvents = [],
-  onCreate,
 }: {
   days: WeekDay[];
   hours: string[];
   offsetLabel: string;
   eventsByDay?: Record<string, CalendarEvent[]>;
   multiDayEvents?: CalendarEvent[];
-  onCreate?: (draft: EventDraft) => void;
 }) {
   const dispatch = useCalendarDispatch();
 
@@ -136,10 +136,12 @@ export function WeekGrid({
                   key={`${day.key}-${hour}`}
                   role="gridcell"
                   onClick={() =>
-                    onCreate?.({
-                      date: day.key,
-                      startTime: `${String(hourIndex).padStart(2, "0")}:00`,
-                    })
+                    dispatch(
+                      setDraftEvent({
+                        date: day.key,
+                        startTime: `${String(hourIndex).padStart(2, "0")}:00`,
+                      }),
+                    )
                   }
                   sx={{ borderLeft: border, cursor: "pointer" }}
                 />

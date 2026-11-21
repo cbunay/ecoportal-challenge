@@ -177,7 +177,12 @@ export function EditEventDialog({ event, onClose }: Props) {
             variant="contained"
             size="small"
             disabled={isSubmitting}
-            sx={{ borderRadius: 999, px: 3, textTransform: "none", color: "#fff" }}
+            sx={{
+              borderRadius: 999,
+              px: 3,
+              textTransform: "none",
+              color: "#fff",
+            }}
           >
             Save
           </Button>

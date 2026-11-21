@@ -18,6 +18,8 @@ import TextField from "@mui/material/TextField";
 
 import { useSearchParams } from "next/navigation";
 
+import type { EventDraft } from "@/store/features/calendar/calendar.slice";
+
 import {
   fromInputValue,
   parseDateParam,
@@ -35,22 +37,20 @@ type FormValues = {
   endTime: string;
 };
 
-export type EventDraft = { date: string; startTime?: string };
+type Props = { onClose: () => void; draftEvent?: EventDraft };
 
-type Props = { onClose: () => void; draft?: EventDraft };
-
-function defaultTimes(focusedDate: Date, draft?: EventDraft) {
+function defaultTimes(focusedDate: Date, draftEvent?: EventDraft) {
   const [focusedDay] = toInputValue(focusedDate).split("T");
-  const date = draft?.date ?? focusedDay;
-  const start = draft?.startTime
-    ? (fromInputValue(`${date}T${draft.startTime}`) ?? new Date())
+  const date = draftEvent?.date ?? focusedDay;
+  const start = draftEvent?.startTime
+    ? (fromInputValue(`${date}T${draftEvent.startTime}`) ?? new Date())
     : addHours(startOfHour(new Date()), 1);
   const [, startTime] = toInputValue(new Date(start)).split("T");
   const [, endTime] = toInputValue(addHours(new Date(start), 1)).split("T");
   return { date, startTime, endTime };
 }
 
-export function CreateEventDialog({ onClose, draft }: Props) {
+export function CreateEventDialog({ onClose, draftEvent }: Props) {
   const [createEvent] = useCreateEventMutation();
   const { enqueueSnackbar } = useSnackbar();
   const dateParam = useSearchParams().get("date");
@@ -63,7 +63,7 @@ export function CreateEventDialog({ onClose, draft }: Props) {
   } = useForm<FormValues>({
     defaultValues: {
       name: "",
-      ...defaultTimes(parseDateParam(dateParam, new Date()), draft),
+      ...defaultTimes(parseDateParam(dateParam, new Date()), draftEvent),
     },
   });
 
@@ -199,7 +199,12 @@ export function CreateEventDialog({ onClose, draft }: Props) {
             variant="contained"
             size="small"
             disabled={isSubmitting}
-            sx={{ borderRadius: 999, px: 3, textTransform: "none", color: "#fff" }}
+            sx={{
+              borderRadius: 999,
+              px: 3,
+              textTransform: "none",
+              color: "#fff",
+            }}
           >
             Save
           </Button>

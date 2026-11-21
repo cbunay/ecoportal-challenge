@@ -1,5 +1,6 @@
 import { tz } from "@date-fns/tz";
 import {
+  addHours,
   addMonths,
   addWeeks,
   eachDayOfInterval,
@@ -10,12 +11,13 @@ import {
   isSameMonth,
   isValid,
   parse,
+  startOfHour,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
 
 import { calendarTimeZone } from "@/lib/defaults";
-import type { CalendarEvent } from "@/sever/event.type";
+import { EventType, type CalendarEvent } from "@/sever/event.type";
 
 const inTimeZone = tz(calendarTimeZone);
 
@@ -177,6 +179,28 @@ export function weekRange(reference: Date) {
 
 export function eventDayKey(iso: string) {
   return dayKey(new Date(iso));
+}
+
+export function draftEventToEvent(draftEvent: {
+  date: string;
+  startTime?: string;
+}) {
+  const time =
+    draftEvent.startTime ??
+    format(addHours(startOfHour(new Date()), 1), "HH:mm", { in: inTimeZone });
+  const startDate = fromInputValue(`${draftEvent.date}T${time}`);
+  if (!startDate) return null;
+  const endDate = new Date(
+    new Date(startDate).getTime() + 3_600_000,
+  ).toISOString();
+
+  return {
+    id: "draft",
+    name: "(No title)",
+    type: EventType.Meeting,
+    startDate,
+    endDate,
+  };
 }
 
 export function eventTimeLabel(iso: string) {
