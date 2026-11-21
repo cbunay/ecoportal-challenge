@@ -3,6 +3,12 @@
 import { useForm } from "react-hook-form";
 import { addHours, startOfHour } from "date-fns";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import CloseIcon from "@mui/icons-material/Close";
+import DragHandleIcon from "@mui/icons-material/DragHandle";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -85,71 +91,94 @@ export function CreateEventDialog({ onClose }: Props) {
   const timeField = { sx: { width: 120 } };
 
   return (
-    <DraggableDialog onClose={onClose}>
+    <DraggableDialog open onClose={onClose}>
+      <DialogTitle
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          py: 1,
+          cursor: "grab",
+          "&:active": { cursor: "grabbing" },
+        }}
+      >
+        <DragHandleIcon color="action" />
+        <Box>
+          <IconButton aria-label="Close" onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack spacing={2.5} sx={{ pl: 6 }}>
-          {errors.root?.server && (
-            <Alert severity="error">{errors.root.server.message}</Alert>
-          )}
-          <TextField
-            variant="standard"
-            placeholder="Add title"
-            {...register("name", {
-              validate: (v) => v.trim() !== "" || "Name is required",
-            })}
-            error={Boolean(errors.name)}
-            helperText={errors.name?.message}
-            autoFocus
-            fullWidth
-            slotProps={{
-              htmlInput: { "aria-label": "Name" },
-              input: { sx: { fontSize: 22 } },
-            }}
-          />
-          <Box>
-            <Chip
-              label="Meeting"
-              sx={{ bgcolor: "#c2e7ff", color: "#001d35", fontSize: 14 }}
+        <DialogContent>
+          <Stack spacing={2.5} sx={{ pl: 6 }}>
+            {errors.root?.server && (
+              <Alert severity="error">{errors.root.server.message}</Alert>
+            )}
+            <TextField
+              variant="standard"
+              placeholder="Add title"
+              {...register("name", {
+                validate: (v) => v.trim() !== "" || "Name is required",
+              })}
+              error={Boolean(errors.name)}
+              helperText={errors.name?.message}
+              autoFocus
+              fullWidth
+              slotProps={{
+                htmlInput: { "aria-label": "Name" },
+                input: { sx: { fontSize: 22 } },
+              }}
             />
-          </Box>
-        </Stack>
-        <Stack direction="row" spacing={2} sx={{ mt: 3, alignItems: "center" }}>
-          <AccessTimeIcon sx={{ width: 32 }} />
-          <TextField
-            type="date"
-            size="small"
-            label="Date"
-            {...register("date", { required: "Date is required" })}
-            error={Boolean(errors.date)}
-            helperText={errors.date?.message}
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-          <TextField
-            type="time"
-            size="small"
-            label="Start"
-            {...register("startTime", { required: "Start time is required" })}
-            error={Boolean(errors.startTime)}
-            helperText={errors.startTime?.message}
-            slotProps={{ inputLabel: { shrink: true } }}
-            {...timeField}
-          />
-          <TextField
-            type="time"
-            size="small"
-            label="End"
-            {...register("endTime", {
-              required: "End time is required",
-              validate: (v) =>
-                v > getValues("startTime") || "End must be after start",
-            })}
-            error={Boolean(errors.endTime)}
-            helperText={errors.endTime?.message}
-            slotProps={{ inputLabel: { shrink: true } }}
-            {...timeField}
-          />
-        </Stack>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
+            <Box>
+              <Chip
+                label="Meeting"
+                sx={{ bgcolor: "#c2e7ff", color: "#001d35", fontSize: 14 }}
+              />
+            </Box>
+          </Stack>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ mt: 3, alignItems: "center" }}
+          >
+            <AccessTimeIcon sx={{ width: 32 }} />
+            <TextField
+              type="date"
+              size="small"
+              label="Date"
+              {...register("date", { required: "Date is required" })}
+              error={Boolean(errors.date)}
+              helperText={errors.date?.message}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <TextField
+              type="time"
+              size="small"
+              label="Start"
+              {...register("startTime", { required: "Start time is required" })}
+              error={Boolean(errors.startTime)}
+              helperText={errors.startTime?.message}
+              slotProps={{ inputLabel: { shrink: true } }}
+              {...timeField}
+            />
+            <TextField
+              type="time"
+              size="small"
+              label="End"
+              {...register("endTime", {
+                required: "End time is required",
+                validate: (v) =>
+                  v > getValues("startTime") || "End must be after start",
+              })}
+              error={Boolean(errors.endTime)}
+              helperText={errors.endTime?.message}
+              slotProps={{ inputLabel: { shrink: true } }}
+              {...timeField}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button
             type="submit"
             variant="contained"
@@ -158,7 +187,7 @@ export function CreateEventDialog({ onClose }: Props) {
           >
             Save
           </Button>
-        </Box>
+        </DialogActions>
       </form>
     </DraggableDialog>
   );

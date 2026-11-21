@@ -1,22 +1,17 @@
 "use client";
 
-import { useRef, type ReactNode, type RefObject } from "react";
-import CloseIcon from "@mui/icons-material/Close";
-import DragHandleIcon from "@mui/icons-material/DragHandle";
-import Box from "@mui/material/Box";
+import { useRef, type RefObject } from "react";
 import Dialog, { type DialogProps } from "@mui/material/Dialog";
-import IconButton from "@mui/material/IconButton";
 import Paper, { type PaperProps } from "@mui/material/Paper";
 import Draggable from "react-draggable";
 
-const handleClass = "draggable-dialog-handle";
-
+// Drag by the DialogTitle; buttons inside it stay clickable.
 function DraggablePaper(props: PaperProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   return (
     <Draggable
       nodeRef={nodeRef as RefObject<HTMLDivElement>}
-      handle={`.${handleClass}`}
+      handle=".MuiDialogTitle-root"
       cancel="button"
     >
       <Paper {...props} ref={nodeRef} />
@@ -24,43 +19,16 @@ function DraggablePaper(props: PaperProps) {
   );
 }
 
-type Props = {
-  onClose: () => void;
-  maxWidth?: DialogProps["maxWidth"];
-  children: ReactNode;
-};
-
-export function DraggableDialog({ onClose, maxWidth = "sm", children }: Props) {
+export function DraggableDialog(props: DialogProps) {
   return (
     <Dialog
-      open
-      onClose={onClose}
       fullWidth
-      maxWidth={maxWidth}
       slots={{ paper: DraggablePaper }}
       slotProps={{
         backdrop: { sx: { bgcolor: "transparent" } },
-        paper: {
-          sx: { bgcolor: "#f0f4f9", borderRadius: "28px", p: 3, pt: 2 },
-        },
+        paper: { sx: { bgcolor: "#f0f4f9", borderRadius: "28px" } },
       }}
-    >
-      <Box
-        className={handleClass}
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          cursor: "grab",
-          "&:active": { cursor: "grabbing" },
-        }}
-      >
-        <DragHandleIcon color="action" />
-        <IconButton aria-label="Close" onClick={onClose} size="small">
-          <CloseIcon />
-        </IconButton>
-      </Box>
-      {children}
-    </Dialog>
+      {...props}
+    />
   );
 }

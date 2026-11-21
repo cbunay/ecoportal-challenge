@@ -1,6 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { CalendarEvent, CreateEventInput } from "@/sever/event.type";
+import type {
+  CalendarEvent,
+  CreateEventInput,
+  UpdateEventInput,
+} from "@/sever/event.type";
 
 export type EventsRange = { start: string; end: string };
 
@@ -17,7 +21,22 @@ export const eventsApi = createApi({
       query: (body) => ({ url: "events", method: "POST", body }),
       invalidatesTags: ["Event"],
     }),
+    updateEvent: builder.mutation<
+      CalendarEvent,
+      { id: string; patch: UpdateEventInput }
+    >({
+      query: ({ id, patch }) => ({
+        url: `events/${id}`,
+        method: "PATCH",
+        body: patch,
+      }),
+      invalidatesTags: ["Event"],
+    }),
   }),
 });
 
-export const { useGetEventsQuery, useCreateEventMutation } = eventsApi;
+export const {
+  useGetEventsQuery,
+  useCreateEventMutation,
+  useUpdateEventMutation,
+} = eventsApi;
