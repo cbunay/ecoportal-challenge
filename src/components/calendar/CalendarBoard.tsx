@@ -4,7 +4,6 @@ import {
   draftToEvent,
   CalendarView,
   monthRange,
-  parseDateParam,
   weekRange,
 } from "@/lib/calendar-grid";
 
@@ -25,13 +24,14 @@ import { WeekGrid } from "./WeekGrid";
 import LinearProgress from "@mui/material/LinearProgress";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useFocusedDate } from "@/lib/use-focused-date";
 
 export function CalendarBoard() {
   const dispatch = useCalendarDispatch();
   const [editing, setEditing] = useState(false);
   const { view } = useParams<{ view: CalendarView }>();
-  const focusedDate = parseDateParam(useSearchParams().get("date"));
+  const focusedDate = useFocusedDate();
   const activeEvent = useCalendarSelector(selectActiveEvent);
   const draftEvent = useCalendarSelector(selectDraftEvent);
   const previewEvent = draftEvent && draftToEvent(draftEvent);

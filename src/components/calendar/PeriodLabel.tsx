@@ -2,16 +2,13 @@
 
 import Typography from "@mui/material/Typography";
 
-import {
-  CalendarView,
-  formatPeriodLabel,
-  parseDateParam,
-} from "@/lib/calendar-grid";
-import { useParams, useSearchParams } from "next/navigation";
+import { CalendarView, formatPeriodLabel } from "@/lib/calendar-grid";
+import { useFocusedDate } from "@/lib/use-focused-date";
+import { useParams } from "next/navigation";
 
 export function PeriodLabel() {
   const { view } = useParams<{ view: CalendarView }>();
-  const focusedDate = parseDateParam(useSearchParams().get("date"));
+  const focusedDate = useFocusedDate();
 
   return (
     <Typography

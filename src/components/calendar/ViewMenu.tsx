@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 
@@ -9,7 +9,7 @@ import { CalendarView } from "@/lib/calendar-grid";
 export function ViewMenu() {
   const { view } = useParams<{ view: CalendarView }>();
   const router = useRouter();
-  const search = useSearchParams().toString();
+  const { date } = useParams<{ date?: string }>();
 
   return (
     <Select
@@ -19,7 +19,7 @@ export function ViewMenu() {
       inputProps={{ "aria-label": "View" }}
       onChange={(event) =>
         router.push(
-          `/calendar/${event.target.value}${search ? `?${search}` : ""}`,
+          `/calendar/${event.target.value}${date ? `/${date}` : ""}`,
         )
       }
       sx={{ ml: "auto", borderRadius: 999 }}
