@@ -10,7 +10,7 @@ import type {
   UpdateEventInput,
 } from "./event.type";
 
-let events: CalendarEvent[] = structuredClone(initialEvents) as CalendarEvent[];
+const events: CalendarEvent[] = structuredClone(initialEvents) as CalendarEvent[];
 
 export const eventRepository = {
   async findAll(): Promise<CalendarEvent[]> {

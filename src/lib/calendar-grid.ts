@@ -21,22 +21,63 @@ import { calendarTimeZone } from "@/lib/defaults";
 import { EventType, type CalendarEvent } from "@/sever/event.type";
 
 const inTimeZone = tz(calendarTimeZone);
-
+const zone = { in: inTimeZone };
 const weekOptions = { in: inTimeZone, weekStartsOn: 0 as const };
+
+const dateKeyFormat = "yyyy-MM-dd";
+const dateTimeInputFormat = "yyyy-MM-dd'T'HH:mm";
+const daysPerWeek = 7;
+const minutesPerDay = 24 * 60;
+const msPerMinute = 60_000;
+const msPerHour = 60 * msPerMinute;
 
 export enum CalendarView {
   Month = "month",
   Week = "week",
 }
 
+function formatInZone(date: Date, pattern: string) {
+  return format(date, pattern, zone);
+}
+
+function toIso(date: Date) {
+  return new Date(date.getTime()).toISOString();
+}
+
 function dayKey(date: Date) {
-  return format(date, "yyyy-MM-dd", { in: inTimeZone });
+  return formatInZone(date, dateKeyFormat);
 }
 
 function dayLabel(date: Date) {
-  const day = format(date, "d", { in: inTimeZone });
+  const dayOfMonth = formatInZone(date, "d");
 
-  return day === "1" ? format(date, "MMM d", { in: inTimeZone }) : day;
+  return dayOfMonth === "1" ? formatInZone(date, "MMM d") : dayOfMonth;
+}
+
+function eachZonedDay(start: Date, end: Date) {
+  return eachDayOfInterval({ start, end }, zone);
+}
+
+function weekBounds(reference: Date) {
+  return {
+    start: startOfWeek(reference, weekOptions),
+    end: endOfWeek(reference, weekOptions),
+  };
+}
+
+function monthGridBounds(reference: Date) {
+  const monthStart = startOfMonth(reference, zone);
+  const monthEnd = endOfMonth(reference, zone);
+
+  return {
+    monthStart,
+    start: startOfWeek(monthStart, weekOptions),
+    end: endOfWeek(monthEnd, weekOptions),
+  };
+}
+
+function isoRange(start: Date, end: Date) {
+  return { start: toIso(start), end: toIso(end) };
 }
 
 export type MonthDay = {
@@ -48,29 +89,20 @@ export type MonthDay = {
 };
 
 export function buildMonthWeeks(reference: Date, today: Date = reference) {
-  const monthStart = startOfMonth(reference, { in: inTimeZone });
-  const gridStart = startOfWeek(monthStart, weekOptions);
-  const gridEnd = endOfWeek(
-    endOfMonth(reference, { in: inTimeZone }),
-    weekOptions,
-  );
-  const days = eachDayOfInterval(
-    { start: gridStart, end: gridEnd },
-    { in: inTimeZone },
-  );
-
+  const { monthStart, start, end } = monthGridBounds(reference);
+  const days = eachZonedDay(start, end);
   const weeks: MonthDay[][] = [];
 
-  for (let index = 0; index < days.length; index += 7) {
-    weeks.push(
-      days.slice(index, index + 7).map((day) => ({
-        key: dayKey(day),
-        weekday: format(day, "EEE", { in: inTimeZone }).toUpperCase(),
-        label: dayLabel(day),
-        inMonth: isSameMonth(day, monthStart, { in: inTimeZone }),
-        isToday: isSameDay(day, today, { in: inTimeZone }),
-      })),
-    );
+  for (let index = 0; index < days.length; index += daysPerWeek) {
+    const week = days.slice(index, index + daysPerWeek).map((day) => ({
+      key: dayKey(day),
+      weekday: formatInZone(day, "EEE").toUpperCase(),
+      label: dayLabel(day),
+      inMonth: isSameMonth(day, monthStart, zone),
+      isToday: isSameDay(day, today, zone),
+    }));
+
+    weeks.push(week);
   }
 
   return weeks;
@@ -83,43 +115,42 @@ export type WeekDay = {
   isToday: boolean;
 };
 
-export function buildWeekDays(reference: Date, today: Date = reference) {
-  const start = startOfWeek(reference, weekOptions);
-  const end = endOfWeek(reference, weekOptions);
+export function buildWeekDays(reference: Date) {
+  const { start, end } = weekBounds(reference);
+  const today = new Date();
 
-  return eachDayOfInterval({ start, end }, { in: inTimeZone }).map((day) => ({
+  return eachZonedDay(start, end).map((day) => ({
     key: dayKey(day),
-    weekday: format(day, "EEE", { in: inTimeZone }).toUpperCase(),
-    label: format(day, "d", { in: inTimeZone }),
-    isToday: isSameDay(day, today, { in: inTimeZone }),
+    weekday: formatInZone(day, "EEE").toUpperCase(),
+    label: formatInZone(day, "d"),
+    isToday: isSameDay(day, today, zone),
   }));
 }
 
-export function weekHourLabels() {
-  return Array.from({ length: 24 }, (_, index) =>
-    format(new Date(2026, 0, 1, index), "h a"),
-  );
+export function buildHourLabels() {
+  return Array.from({ length: 24 }, (_, hour) => {
+    const clockHour = new Date(2026, 0, 1, hour);
+
+    return format(clockHour, "h a");
+  });
 }
 
-export function timeZoneOffsetLabel(reference: Date) {
-  return format(reference, "O", { in: inTimeZone });
+export function buildGmtOffsetLabel(reference: Date) {
+  return formatInZone(reference, "O");
 }
 
 export function formatPeriodLabel(reference: Date, view: CalendarView) {
   if (view === CalendarView.Month) {
-    return format(reference, "MMMM yyyy", { in: inTimeZone });
+    return formatInZone(reference, "MMMM yyyy");
   }
 
-  const start = startOfWeek(reference, weekOptions);
-  const end = endOfWeek(reference, weekOptions);
-  const startLabel = format(start, "MMM yyyy", { in: inTimeZone });
-  const endLabel = format(end, "MMM yyyy", { in: inTimeZone });
+  const { start, end } = weekBounds(reference);
+  const startMonth = formatInZone(start, "MMM yyyy");
+  const endMonth = formatInZone(end, "MMM yyyy");
 
-  if (startLabel === endLabel) {
-    return format(start, "MMMM yyyy", { in: inTimeZone });
-  }
+  if (startMonth === endMonth) return formatInZone(start, "MMMM yyyy");
 
-  return `${startLabel} – ${endLabel}`;
+  return `${startMonth} – ${endMonth}`;
 }
 
 export function shiftPeriod(
@@ -127,9 +158,9 @@ export function shiftPeriod(
   view: CalendarView,
   amount: number,
 ) {
-  return view === CalendarView.Week
-    ? addWeeks(reference, amount, { in: inTimeZone })
-    : addMonths(reference, amount, { in: inTimeZone });
+  if (view === CalendarView.Week) return addWeeks(reference, amount, zone);
+
+  return addMonths(reference, amount, zone);
 }
 
 export function formatDateParam(date: Date) {
@@ -137,98 +168,96 @@ export function formatDateParam(date: Date) {
 }
 
 export function parseDateParam(param: string | null) {
-  const today = startOfDay(new Date(), { in: inTimeZone });
-  const parsed = param
-    ? parse(param, "yyyy-MM-dd", today, { in: inTimeZone })
-    : today;
+  const today = startOfDay(new Date(), zone);
+  if (!param) return today;
+
+  const parsed = parse(param, dateKeyFormat, today, zone);
 
   return isValid(parsed) ? parsed : today;
 }
 
-const inputFormat = "yyyy-MM-dd'T'HH:mm";
-
 export function toInputValue(date: Date) {
-  return format(date, inputFormat, { in: inTimeZone });
+  return formatInZone(date, dateTimeInputFormat);
 }
 
 export function fromInputValue(value: string) {
-  const parsed = parse(value, inputFormat, new Date(), { in: inTimeZone });
+  const parsed = parse(value, dateTimeInputFormat, new Date(), zone);
 
-  return isValid(parsed) ? utcIso(parsed) : null;
-}
-
-function utcIso(date: Date) {
-  return new Date(date.getTime()).toISOString();
+  return isValid(parsed) ? toIso(parsed) : null;
 }
 
 export function monthRange(reference: Date) {
-  const monthStart = startOfMonth(reference, { in: inTimeZone });
-  const mothEnd = endOfMonth(reference, { in: inTimeZone });
+  const { start, end } = monthGridBounds(reference);
 
-  return {
-    start: utcIso(startOfWeek(monthStart, weekOptions)),
-    end: utcIso(endOfWeek(mothEnd, weekOptions)),
-  };
+  return isoRange(start, end);
 }
 
 export function weekRange(reference: Date) {
-  return {
-    start: utcIso(startOfWeek(reference, weekOptions)),
-    end: utcIso(endOfWeek(reference, weekOptions)),
-  };
+  const { start, end } = weekBounds(reference);
+
+  return isoRange(start, end);
 }
 
 export function eventDayKey(iso: string) {
   return dayKey(new Date(iso));
 }
 
-export function draftToEvent(draftEvent: {
+function defaultDraftStartTime() {
+  const nextHour = addHours(startOfHour(new Date()), 1);
+
+  return formatInZone(nextHour, "HH:mm");
+}
+
+function oneHourAfter(iso: string) {
+  return new Date(new Date(iso).getTime() + msPerHour).toISOString();
+}
+
+export function draftToEvent(draft: {
   date: string;
   startTime?: string;
   endTime?: string;
   name?: string;
 }) {
-  const time =
-    draftEvent.startTime ??
-    format(addHours(startOfHour(new Date()), 1), "HH:mm", { in: inTimeZone });
-  const startDate = fromInputValue(`${draftEvent.date}T${time}`);
+  const startTime = draft.startTime ?? defaultDraftStartTime();
+  const startDate = fromInputValue(`${draft.date}T${startTime}`);
   if (!startDate) return null;
+
   const typedEnd =
-    draftEvent.endTime &&
-    draftEvent.startTime &&
-    draftEvent.endTime > draftEvent.startTime
-      ? fromInputValue(`${draftEvent.date}T${draftEvent.endTime}`)
+    draft.startTime && draft.endTime && draft.endTime > draft.startTime
+      ? fromInputValue(`${draft.date}T${draft.endTime}`)
       : null;
-  const endDate =
-    typedEnd ??
-    new Date(new Date(startDate).getTime() + 3_600_000).toISOString();
 
   return {
     id: "draft",
-    name: draftEvent.name?.trim() || "(No title)",
+    name: draft.name?.trim() || "(No title)",
     type: EventType.Meeting,
     startDate,
-    endDate,
+    endDate: typedEnd ?? oneHourAfter(startDate),
   };
 }
 
 export function eventTimeLabel(iso: string) {
-  return format(new Date(iso), "h:mm a", { in: inTimeZone });
+  return formatInZone(new Date(iso), "h:mm a");
 }
 
 export function eventRangeLabel(event: CalendarEvent) {
   const start = new Date(event.startDate);
   const end = new Date(event.endDate);
+
   if (isMultiDay(event)) {
-    const pattern = "EEE, MMM d, h:mm a";
-    return `${format(start, pattern, { in: inTimeZone })} – ${format(end, pattern, { in: inTimeZone })}`;
+    const when = "EEE, MMM d, h:mm a";
+
+    return `${formatInZone(start, when)} – ${formatInZone(end, when)}`;
   }
-  const day = format(start, "EEEE, MMMM d", { in: inTimeZone });
-  return `${day} · ${eventTimeLabel(event.startDate)} – ${eventTimeLabel(event.endDate)}`;
+
+  const day = formatInZone(start, "EEEE, MMMM d");
+  const times = `${eventTimeLabel(event.startDate)} – ${eventTimeLabel(event.endDate)}`;
+
+  return `${day} · ${times}`;
 }
 
 export function eventHourLabel(iso: string) {
-  return format(new Date(iso), "h a", { in: inTimeZone });
+  return formatInZone(new Date(iso), "h a");
 }
 
 export type PositionedEvent = {
@@ -241,50 +270,69 @@ export type PositionedEvent = {
 
 function minutesOfDay(iso: string) {
   const date = new Date(iso);
-  return (
-    Number(format(date, "H", { in: inTimeZone })) * 60 +
-    Number(format(date, "m", { in: inTimeZone }))
-  );
+  const hours = Number(formatInZone(date, "H"));
+  const minutes = Number(formatInZone(date, "m"));
+
+  return hours * 60 + minutes;
 }
 
-export function layoutDayEvents(events: CalendarEvent[]): PositionedEvent[] {
-  const items = events
-    .map((event) => {
-      const startMinutes = minutesOfDay(event.startDate);
-      const duration =
-        (new Date(event.endDate).getTime() -
-          new Date(event.startDate).getTime()) /
-        60000;
+type TimedEvent = {
+  event: CalendarEvent;
+  startMinutes: number;
+  endMinutes: number;
+};
 
-      return {
-        event,
-        startMinutes,
-        endMinutes: Math.min(startMinutes + duration, 24 * 60),
-      };
-    })
-    .sort((a, b) => a.startMinutes - b.startMinutes);
+function toTimedEvent(event: CalendarEvent): TimedEvent {
+  const startMinutes = minutesOfDay(event.startDate);
+  const durationMinutes =
+    (new Date(event.endDate).getTime() - new Date(event.startDate).getTime()) /
+    msPerMinute;
 
-  const result: PositionedEvent[] = [];
-  let group: typeof items = [];
-  let groupEnd = 0;
-
-  const flush = () => {
-    group.forEach((item, index) =>
-      result.push({ ...item, index, count: group.length }),
-    );
-    group = [];
+  return {
+    event,
+    startMinutes,
+    endMinutes: Math.min(startMinutes + durationMinutes, minutesPerDay),
   };
+}
+
+function overlappingClusters(items: TimedEvent[]) {
+  const clusters: TimedEvent[][] = [];
+  let current: TimedEvent[] = [];
+  let clusterEnd = 0;
 
   for (const item of items) {
-    if (group.length && item.startMinutes >= groupEnd) flush();
-    groupEnd = group.length
-      ? Math.max(groupEnd, item.endMinutes)
-      : item.endMinutes;
-    group.push(item);
-  }
-  flush();
+    const overlapsCurrent =
+      current.length > 0 && item.startMinutes < clusterEnd;
 
-  return result;
+    if (current.length > 0 && !overlapsCurrent) {
+      clusters.push(current);
+      current = [];
+    }
+
+    clusterEnd =
+      current.length > 0
+        ? Math.max(clusterEnd, item.endMinutes)
+        : item.endMinutes;
+    current.push(item);
+  }
+
+  if (current.length > 0) clusters.push(current);
+
+  return clusters;
+}
+
+export function lineUpDayEvents(events: CalendarEvent[]): PositionedEvent[] {
+  const timed = events
+    .map(toTimedEvent)
+    .sort((a, b) => a.startMinutes - b.startMinutes);
+
+  return overlappingClusters(timed).flatMap((cluster) =>
+    cluster.map((item, index) => ({
+      ...item,
+      index,
+      count: cluster.length,
+    })),
+  );
 }
 
 export type WeekBar = {
@@ -298,9 +346,9 @@ export type WeekBar = {
 
 function eventDayRange(event: CalendarEvent) {
   const startKey = eventDayKey(event.startDate);
-  const endKey = eventDayKey(
-    new Date(new Date(event.endDate).getTime() - 1).toISOString(),
-  );
+  // endDate is exclusive, so midnight stays on the previous day.
+  const inclusiveEnd = new Date(new Date(event.endDate).getTime() - 1);
+  const endKey = eventDayKey(inclusiveEnd.toISOString());
 
   return { startKey, endKey: endKey < startKey ? startKey : endKey };
 }
@@ -325,14 +373,17 @@ export function groupEventsByDay(events: CalendarEvent[]) {
   return byDay;
 }
 
-export function layoutWeekEvents(
+type PlacedBar = Omit<WeekBar, "lane">;
+
+function barsInWeek(
   week: { key: string }[],
   events: CalendarEvent[],
-): WeekBar[] {
+): PlacedBar[] {
   const weekStart = week[0].key;
   const weekEnd = week[week.length - 1].key;
+  const lastColumn = week.length - 1;
 
-  const bars = events
+  return events
     .map((event) => ({ event, ...eventDayRange(event) }))
     .filter(
       ({ startKey, endKey }) => startKey <= weekEnd && endKey >= weekStart,
@@ -340,11 +391,13 @@ export function layoutWeekEvents(
     .map(({ event, startKey, endKey }) => ({
       event,
       colStart:
-        startKey <= weekStart ? 0 : week.findIndex((d) => d.key === startKey),
+        startKey <= weekStart
+          ? 0
+          : week.findIndex((day) => day.key === startKey),
       colEnd:
         endKey >= weekEnd
-          ? week.length - 1
-          : week.findIndex((d) => d.key === endKey),
+          ? lastColumn
+          : week.findIndex((day) => day.key === endKey),
       startsInWeek: startKey >= weekStart,
       endsInWeek: endKey <= weekEnd,
     }))
@@ -354,14 +407,25 @@ export function layoutWeekEvents(
         b.colEnd - a.colEnd ||
         a.event.startDate.localeCompare(b.event.startDate),
     );
+}
 
+function assignLanes(bars: PlacedBar[]): WeekBar[] {
   const laneEnds: number[] = [];
 
   return bars.map((bar) => {
-    let lane = laneEnds.findIndex((end) => end < bar.colStart);
-    if (lane === -1) lane = laneEnds.length;
+    const openLane = laneEnds.findIndex(
+      (endColumn) => endColumn < bar.colStart,
+    );
+    const lane = openLane === -1 ? laneEnds.length : openLane;
     laneEnds[lane] = bar.colEnd;
 
     return { ...bar, lane };
   });
+}
+
+export function lineUpMultiDayEvents(
+  week: { key: string }[],
+  events: CalendarEvent[],
+): WeekBar[] {
+  return assignLanes(barsInWeek(week, events));
 }

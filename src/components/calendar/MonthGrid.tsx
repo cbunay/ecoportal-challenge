@@ -1,27 +1,26 @@
-import {
-  buildMonthWeeks,
-  formatDateParam,
-  type MonthDay,
-} from "@/lib/calendar-grid";
-import type { CalendarEvent } from "@/sever/event.type";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 
+import {
+  buildMonthWeeks,
+  draftToEvent,
+  formatDateParam,
+  lineUpMultiDayEvents,
+} from "@/lib/calendar-grid";
+import type { CalendarEvent } from "@/sever/event.type";
 import {
   setDraftEvent,
   type EventDraft,
 } from "@/store/features/calendar/calendar.slice";
 import { useCalendarDispatch } from "@/store/hooks";
 import { useParams, useRouter } from "next/navigation";
-
-import { WeekBars } from "./WeekBars";
-
-const border = "1px solid #e6e8ec";
-
-const barsTop = 28;
-
-const labelColor = (day: MonthDay) => (day.inMonth ? "#3c4043" : "#70757a");
+import {
+  MonthContainer,
+  MultiDayEvent,
+  MultiDayEventRow,
+} from "../event/MultiDayEvent";
+import { MonthDayCell } from "./MonthDayCell";
+import { MonthHeader } from "./MonthHeader";
 
 export function MonthGrid({
   focusedDate,
@@ -33,38 +32,23 @@ export function MonthGrid({
   const dispatch = useCalendarDispatch();
   const router = useRouter();
   const { view } = useParams<{ view: string }>();
-  const openCreate = (draft: EventDraft) => {
-    dispatch(setDraftEvent(draft));
-    router.push(`/calendar/${view}/${formatDateParam(focusedDate)}/event/new`);
-  };
   const weeks = buildMonthWeeks(focusedDate, new Date());
 
+  const openCreate = (draft: EventDraft) => {
+    dispatch(setDraftEvent(draft));
+    router.push(
+      `/calendar/${view}/${formatDateParam(focusedDate)}/event/new?slot=${Date.parse(draftToEvent(draft)?.startDate ?? "")}`,
+    );
+  };
+
+  const openEvent = (id: string) =>
+    router.push(
+      `/calendar/${view}/${formatDateParam(focusedDate)}/event/${id}`,
+    );
+
   return (
-    <Stack direction="column" sx={{ flex: 1 }}>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(7, 1fr)",
-        }}
-      >
-        {weeks[0]?.map((day) => (
-          <Typography
-            key={day.weekday}
-            role="columnheader"
-            sx={{
-              paddingTop: ".5rem",
-              textAlign: "center",
-              fontSize: 11,
-              fontWeight: 400,
-              borderRight: border,
-              color: "#70757a",
-              "&:last-of-type": { borderRight: "none" },
-            }}
-          >
-            {day.weekday}
-          </Typography>
-        ))}
-      </Box>
+    <Stack sx={{ flex: 1 }}>
+      <MonthHeader days={weeks[0] ?? []} />
       {weeks.map((week) => (
         <Box
           key={week[0]?.key}
@@ -76,51 +60,24 @@ export function MonthGrid({
             overflow: "hidden",
             display: "grid",
             gridTemplateColumns: "repeat(7, 1fr)",
-            "&:not(:last-of-type)": { borderBottom: border },
+            "&:not(:last-of-type)": { borderBottom: "1px solid #e6e8ec" },
           }}
         >
           {week.map((day) => (
-            <Stack
+            <MonthDayCell
               key={day.key}
-              role="gridcell"
-              aria-current={day.isToday ? "date" : undefined}
+              day={day}
               onClick={() => openCreate({ date: day.key })}
-              sx={{
-                cursor: "pointer",
-                minWidth: 0,
-                p: "0 1rem 1rem 1rem",
-                alignItems: "center",
-                borderRight: border,
-                "&:last-of-type": { borderRight: "none" },
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: 12,
-                  fontWeight: 500,
-                  textAlign: "center",
-                  lineHeight: "24px",
-                  width: day.isToday ? 24 : "auto",
-                  borderRadius: "50%",
-                  color: day.isToday ? "#fff" : labelColor(day),
-                  bgcolor: day.isToday ? "#1A73E8" : "transparent",
-                }}
-              >
-                {day.label}
-              </Typography>
-            </Stack>
+            />
           ))}
-          <Box
-            sx={{
-              position: "absolute",
-              top: barsTop,
-              left: 0,
-              right: 0,
-              pointerEvents: "none",
-            }}
-          >
-            <WeekBars week={week} events={events} />
-          </Box>
+
+          <MonthContainer>
+            <MultiDayEventRow>
+              {lineUpMultiDayEvents(week, events).map((bar) => (
+                <MultiDayEvent key={bar.event.id} {...bar} onOpen={openEvent} />
+              ))}
+            </MultiDayEventRow>
+          </MonthContainer>
         </Box>
       ))}
     </Stack>

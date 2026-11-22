@@ -12,7 +12,7 @@ export default function CalendarLayout({ children }: { children: ReactNode }) {
         <NotificationProvider>
           <Stack direction="row" sx={{ height: "100dvh" }}>
             <Sidebar />
-            <Stack direction="column" sx={{ flex: 1 }}>
+            <Stack sx={{ flex: 1 }}>
               <CalendarToolbar />
               <Stack
                 component="main"

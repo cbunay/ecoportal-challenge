@@ -9,7 +9,11 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 
-import { formatDateParam, toInputValue } from "@/lib/calendar-grid";
+import {
+  draftToEvent,
+  formatDateParam,
+  toInputValue,
+} from "@/lib/calendar-grid";
 import { useFocusedDate } from "@/lib/use-focused-date";
 import {
   setDraftEvent,
@@ -27,15 +31,15 @@ export function Sidebar() {
   const focusedDate = useFocusedDate();
   const openCreate = (draft: EventDraft) => {
     dispatch(setDraftEvent(draft));
-    router.push(`/calendar/${view}/${formatDateParam(focusedDate)}/event/new`);
+    router.push(
+      `/calendar/${view}/${formatDateParam(focusedDate)}/event/new?slot=${Date.now()}`,
+    );
   };
 
   const handleCreateMeeting = () => {
     setMenuOpen(false);
-    const now = new Date();
     const [date] = toInputValue(focusedDate).split("T");
-    const [, startTime] = toInputValue(now).split("T");
-    openCreate({ date, startTime });
+    openCreate({ date });
   };
   return (
     <Box

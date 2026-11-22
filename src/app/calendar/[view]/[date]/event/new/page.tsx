@@ -16,7 +16,7 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 import {
   clearDraftEvent,
@@ -51,6 +51,11 @@ function defaultTimes(draftEvent: EventDraft) {
 }
 
 export default function CreateEventPage() {
+  const slot = useSearchParams().get("slot");
+  return <CreateEventForm key={slot} />;
+}
+
+function CreateEventForm() {
   const dispatch = useCalendarDispatch();
   const router = useRouter();
   const { view, date } = useParams<{ view: string; date: string }>();
