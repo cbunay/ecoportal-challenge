@@ -8,6 +8,8 @@ import type {
 
 export type EventsRange = { start: string; end: string };
 
+const eventList = { type: "Event", id: "LIST" } as const;
+
 export const eventsApi = createApi({
   reducerPath: "eventsApi",
   baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
@@ -15,15 +17,15 @@ export const eventsApi = createApi({
   endpoints: (builder) => ({
     getEvents: builder.query<CalendarEvent[], EventsRange>({
       query: ({ start, end }) => ({ url: "events", params: { start, end } }),
-      providesTags: ["Event"],
+      providesTags: [eventList],
     }),
     getEvent: builder.query<CalendarEvent, string>({
       query: (id) => `events/${id}`,
-      providesTags: ["Event"],
+      providesTags: (_result, _error, id) => [{ type: "Event", id }],
     }),
     createEvent: builder.mutation<CalendarEvent, CreateEventInput>({
       query: (body) => ({ url: "events", method: "POST", body }),
-      invalidatesTags: ["Event"],
+      invalidatesTags: [eventList],
     }),
     updateEvent: builder.mutation<
       CalendarEvent,
@@ -34,11 +36,14 @@ export const eventsApi = createApi({
         method: "PATCH",
         body: patch,
       }),
-      invalidatesTags: ["Event"],
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Event", id },
+        eventList,
+      ],
     }),
     deleteEvent: builder.mutation<void, string>({
       query: (id) => ({ url: `events/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Event"],
+      invalidatesTags: [eventList],
     }),
   }),
 });
