@@ -1,22 +1,22 @@
 "use client";
 
 import {
-  draftToEvent,
   CalendarView,
+  draftToEvent,
   monthRange,
   weekRange,
 } from "@/lib/calendar-grid";
 
+import { useFocusedDate } from "@/lib/use-focused-date";
 import { selectDraftEvent } from "@/store/features/calendar/calendar.slice";
-import { useCalendarSelector } from "@/store/hooks";
 import { useGetEventsQuery } from "@/store/features/events/events.api";
-import { MonthGrid } from "./MonthGrid";
-import { WeekGrid } from "./WeekGrid";
-import LinearProgress from "@mui/material/LinearProgress";
+import { useCalendarSelector } from "@/store/hooks";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
+import LinearProgress from "@mui/material/LinearProgress";
 import { useParams } from "next/navigation";
-import { useFocusedDate } from "@/lib/use-focused-date";
+import { MonthGrid } from "../month/MonthGrid";
+import { WeekGrid } from "../week/WeekGrid";
 
 export function CalendarBoard() {
   const { view } = useParams<{ view: CalendarView }>();

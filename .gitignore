@@ -47,3 +47,6 @@ next-env.d.ts
 # vscode
 .vscode/*
 /docs
+
+# data
+/data/eventsMult.json

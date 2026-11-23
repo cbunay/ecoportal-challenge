@@ -1,8 +1,9 @@
 import "server-only";
 
-import { parseISO } from "date-fns";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
-import initialEvents from "@/data/events.json";
+import { parseISO } from "date-fns";
 
 import type {
   CalendarEvent,
@@ -10,7 +11,15 @@ import type {
   UpdateEventInput,
 } from "./event.type";
 
-const events: CalendarEvent[] = structuredClone(initialEvents) as CalendarEvent[];
+function loadSeedEvents(): CalendarEvent[] {
+  const file = process.env.SEED_EVENTS_FILE ?? "data/events.json";
+
+  return JSON.parse(
+    readFileSync(path.resolve(process.cwd(), file), "utf-8"),
+  ) as CalendarEvent[];
+}
+
+const events: CalendarEvent[] = loadSeedEvents();
 
 export const eventRepository = {
   async findAll(): Promise<CalendarEvent[]> {

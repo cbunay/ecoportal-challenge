@@ -214,6 +214,7 @@ function oneHourAfter(iso: string) {
 
 export function draftToEvent(draft: {
   date: string;
+  endDate?: string;
   startTime?: string;
   endTime?: string;
   name?: string;
@@ -223,8 +224,8 @@ export function draftToEvent(draft: {
   if (!startDate) return null;
 
   const typedEnd =
-    draft.startTime && draft.endTime && draft.endTime > draft.startTime
-      ? fromInputValue(`${draft.date}T${draft.endTime}`)
+    draft.startTime && draft.endTime
+      ? fromInputValue(`${draft.endDate || draft.date}T${draft.endTime}`)
       : null;
 
   return {
@@ -232,8 +233,15 @@ export function draftToEvent(draft: {
     name: draft.name?.trim() || "(No title)",
     type: EventType.Meeting,
     startDate,
-    endDate: typedEnd ?? oneHourAfter(startDate),
+    endDate:
+      typedEnd && typedEnd > startDate ? typedEnd : oneHourAfter(startDate),
   };
+}
+
+export function draftSlot(draft: Parameters<typeof draftToEvent>[0]) {
+  const startDate = draftToEvent(draft)?.startDate;
+
+  return startDate ? Date.parse(startDate) : Date.now();
 }
 
 export function eventTimeLabel(iso: string) {
@@ -346,7 +354,6 @@ export type WeekBar = {
 
 function eventDayRange(event: CalendarEvent) {
   const startKey = eventDayKey(event.startDate);
-  // endDate is exclusive, so midnight stays on the previous day.
   const inclusiveEnd = new Date(new Date(event.endDate).getTime() - 1);
   const endKey = eventDayKey(inclusiveEnd.toISOString());
 
@@ -409,10 +416,10 @@ function barsInWeek(
     );
 }
 
-function assignLanes(bars: PlacedBar[]): WeekBar[] {
+function assignLanes(bars: PlacedBar[]): { bars: WeekBar[]; lanes: number } {
   const laneEnds: number[] = [];
 
-  return bars.map((bar) => {
+  const placed = bars.map((bar) => {
     const openLane = laneEnds.findIndex(
       (endColumn) => endColumn < bar.colStart,
     );
@@ -421,11 +428,13 @@ function assignLanes(bars: PlacedBar[]): WeekBar[] {
 
     return { ...bar, lane };
   });
+
+  return { bars: placed, lanes: laneEnds.length };
 }
 
 export function lineUpMultiDayEvents(
   week: { key: string }[],
   events: CalendarEvent[],
-): WeekBar[] {
+): { bars: WeekBar[]; lanes: number } {
   return assignLanes(barsInWeek(week, events));
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { paths } from "@/lib/calendar-paths";
+
 import CloseIcon from "@mui/icons-material/Close";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
 import DialogContent from "@mui/material/DialogContent";
@@ -37,9 +39,8 @@ export default function ViewEventPage() {
 
   if (!event) return null;
 
-  const onEdit = () =>
-    router.push(`/calendar/${view}/${date}/event/${id}/edit`);
-  const onClose = () => router.push(`/calendar/${view}/${date}`);
+  const onEdit = () => router.push(paths.eventEdit(view, date, id));
+  const onClose = () => router.push(paths.calendarDate(view, date));
 
   async function handleRemove() {
     try {

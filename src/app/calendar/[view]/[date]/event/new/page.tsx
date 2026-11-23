@@ -1,8 +1,9 @@
 "use client";
 
+import { paths } from "@/lib/calendar-paths";
+
 import { useForm } from "react-hook-form";
 import { addHours, startOfHour } from "date-fns";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CloseIcon from "@mui/icons-material/Close";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
 import DialogActions from "@mui/material/DialogActions";
@@ -15,6 +16,8 @@ import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
@@ -36,6 +39,7 @@ import { EventType } from "@/sever/event.type";
 type FormValues = {
   name: string;
   date: string;
+  endDate: string;
   startTime: string;
   endTime: string;
 };
@@ -47,7 +51,7 @@ function defaultTimes(draftEvent: EventDraft) {
     : addHours(startOfHour(new Date()), 1);
   const [, startTime] = toInputValue(new Date(start)).split("T");
   const [, endTime] = toInputValue(addHours(new Date(start), 1)).split("T");
-  return { date, startTime, endTime };
+  return { date, endDate: draftEvent.endDate ?? date, startTime, endTime };
 }
 
 export default function CreateEventPage() {
@@ -61,22 +65,17 @@ function CreateEventForm() {
   const { view, date } = useParams<{ view: string; date: string }>();
   const focusedDate = useFocusedDate();
   const draft = useCalendarSelector(selectDraftEvent);
-
   const draftEvent: EventDraft = draft ?? {
     date: toInputValue(focusedDate).split("T")[0],
   };
-
-  function onClose() {
-    dispatch(clearDraftEvent());
-    router.push(`/calendar/${view}/${date}`);
-  }
-
   const [createEvent] = useCreateEventMutation();
   const { enqueueSnackbar } = useSnackbar();
+
   const {
     register,
     handleSubmit,
     getValues,
+    setValue,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
@@ -87,16 +86,29 @@ function CreateEventForm() {
   });
 
   const syncDraft = () => {
-    const { name, date, startTime, endTime } = getValues();
+    const { name, date, endDate, startTime, endTime } = getValues();
     if (date && startTime) {
-      dispatch(setDraftEvent({ date, startTime, endTime, name }));
+      dispatch(
+        setDraftEvent({
+          date,
+          endDate,
+          startTime,
+          endTime,
+          name,
+        }),
+      );
     }
   };
+
+  function onClose() {
+    dispatch(clearDraftEvent());
+    router.push(paths.calendarDate(view, date));
+  }
 
   async function onSubmit(values: FormValues) {
     const { date, startTime, endTime } = values;
     const startDate = fromInputValue(`${date}T${startTime}`);
-    const endDate = fromInputValue(`${date}T${endTime}`);
+    const endDate = fromInputValue(`${values.endDate}T${endTime}`);
     if (!startDate || !endDate) {
       setError("root.server", { message: "Enter a valid date and time" });
       return;
@@ -122,13 +134,6 @@ function CreateEventForm() {
     enqueueSnackbar("Event created", { variant: "success" });
     onClose();
   }
-
-  const timeField = { sx: { width: 110 } };
-  const smallText = {
-    inputLabel: { shrink: true, sx: { fontSize: 13 } },
-    input: { sx: { fontSize: 13 } },
-    formHelperText: { sx: { fontSize: 11 } },
-  };
 
   return (
     <DraggableDialog open onClose={onClose} anchorToDraft>
@@ -182,49 +187,76 @@ function CreateEventForm() {
           </Stack>
           <Stack
             direction="row"
-            spacing={2}
-            sx={{ mt: 3, alignItems: "center" }}
+            spacing={1}
+            useFlexGap
+            sx={{
+              mt: 3,
+              alignItems: "center",
+              flexWrap: "wrap",
+              "& .MuiTextField-root": {
+                flex: 1,
+                minWidth: 150,
+                "&:has(input[type=time])": { flex: "none", width: 120 },
+              },
+              "& .MuiFilledInput-root": {
+                fontSize: 14,
+                borderRadius: 1,
+                bgcolor: "#e1e3e8",
+                "&::before, &::after": { display: "none" },
+              },
+              "& .MuiFilledInput-input": { py: 1 },
+            }}
           >
             <AccessTimeIcon fontSize="small" sx={{ width: 32 }} />
             <TextField
               type="date"
+              aria-label="Start date"
+              variant="filled"
               size="small"
-              label="Date"
+              hiddenLabel
               {...register("date", {
                 required: "Date is required",
-                onChange: syncDraft,
+                onChange: (e) => {
+                  setValue("endDate", e.target.value);
+                  syncDraft();
+                },
               })}
               error={Boolean(errors.date)}
               helperText={errors.date?.message}
-              slotProps={smallText}
             />
+
             <TextField
               type="time"
+              aria-label="Start time"
+              variant="filled"
               size="small"
-              label="Start"
+              hiddenLabel
               {...register("startTime", {
                 required: "Start time is required",
                 onChange: syncDraft,
               })}
               error={Boolean(errors.startTime)}
               helperText={errors.startTime?.message}
-              slotProps={smallText}
-              {...timeField}
             />
+            <Typography color="text.secondary" sx={{ px: 0.5 }}>
+              –
+            </Typography>
             <TextField
               type="time"
+              aria-label="End time"
+              variant="filled"
               size="small"
-              label="End"
+              hiddenLabel
               {...register("endTime", {
                 required: "End time is required",
                 onChange: syncDraft,
                 validate: (v) =>
-                  v > getValues("startTime") || "End must be after start",
+                  `${getValues("endDate")}T${v}` >
+                    `${getValues("date")}T${getValues("startTime")}` ||
+                  "End must be after start",
               })}
               error={Boolean(errors.endTime)}
               helperText={errors.endTime?.message}
-              slotProps={smallText}
-              {...timeField}
             />
           </Stack>
         </DialogContent>

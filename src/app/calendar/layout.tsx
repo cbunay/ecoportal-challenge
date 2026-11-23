@@ -1,5 +1,5 @@
 import { CalendarToolbar } from "@/components/calendar/CalendarToolbar";
-import { Sidebar } from "@/components/calendar/Sidebar";
+import { CalendarSidebar } from "@/components/calendar/CalendarSidebar";
 import Stack from "@mui/material/Stack";
 import { Suspense, type ReactNode } from "react";
 import { StoreProvider } from "@/app/StoreProvider";
@@ -11,7 +11,7 @@ export default function CalendarLayout({ children }: { children: ReactNode }) {
       <StoreProvider>
         <NotificationProvider>
           <Stack direction="row" sx={{ height: "100dvh" }}>
-            <Sidebar />
+            <CalendarSidebar />
             <Stack sx={{ flex: 1 }}>
               <CalendarToolbar />
               <Stack

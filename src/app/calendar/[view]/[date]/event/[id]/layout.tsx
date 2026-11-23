@@ -1,5 +1,7 @@
 "use client";
 
+import { paths } from "@/lib/calendar-paths";
+
 import { useEffect, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSnackbar } from "notistack";
@@ -22,7 +24,7 @@ export default function EventLayout({ children }: { children: ReactNode }) {
     enqueueSnackbar(notFound ? "Event not found" : "Could not load the event", {
       variant: "error",
     });
-    router.replace(`/calendar/${view}/${date}`);
+    router.replace(paths.calendarDate(view, date));
   }, [isError, error, enqueueSnackbar, router, view, date]);
 
   return isError ? null : children;

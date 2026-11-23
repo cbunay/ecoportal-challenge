@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { paths } from "@/lib/calendar-paths";
+
 import AddIcon from "@mui/icons-material/Add";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import Box from "@mui/material/Box";
@@ -8,12 +9,9 @@ import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
+import { useRef, useState } from "react";
 
-import {
-  draftToEvent,
-  formatDateParam,
-  toInputValue,
-} from "@/lib/calendar-grid";
+import { formatDateParam, toInputValue } from "@/lib/calendar-grid";
 import { useFocusedDate } from "@/lib/use-focused-date";
 import {
   setDraftEvent,
@@ -22,7 +20,7 @@ import {
 import { useCalendarDispatch } from "@/store/hooks";
 import { useParams, useRouter } from "next/navigation";
 
-export function Sidebar() {
+export function CalendarSidebar() {
   const createButton = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const dispatch = useCalendarDispatch();
@@ -32,7 +30,7 @@ export function Sidebar() {
   const openCreate = (draft: EventDraft) => {
     dispatch(setDraftEvent(draft));
     router.push(
-      `/calendar/${view}/${formatDateParam(focusedDate)}/event/new?slot=${Date.now()}`,
+      paths.eventCreate(view, formatDateParam(focusedDate), Date.now()),
     );
   };
 
@@ -81,9 +79,6 @@ export function Sidebar() {
         variant="outlined"
         ref={createButton}
         endIcon={<AddIcon />}
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
-        aria-controls={menuOpen ? "create-menu" : undefined}
         onClick={() => setMenuOpen(true)}
         sx={{
           mt: 3,

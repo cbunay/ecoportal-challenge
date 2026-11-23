@@ -1,7 +1,8 @@
 "use client";
 
+import { paths } from "@/lib/calendar-paths";
+
 import { useForm } from "react-hook-form";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CloseIcon from "@mui/icons-material/Close";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
 import DialogActions from "@mui/material/DialogActions";
@@ -14,10 +15,12 @@ import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import { useParams, useRouter } from "next/navigation";
 
-import { fromInputValue, toInputValue } from "@/lib/calendar-grid";
+import { fromInputValue, isMultiDay, toInputValue } from "@/lib/calendar-grid";
 import {
   useGetEventQuery,
   useUpdateEventMutation,
@@ -30,14 +33,15 @@ import { DraggableDialog } from "@/components/calendar/DraggableDialog";
 type FormValues = {
   name: string;
   date: string;
+  endDate: string;
   startTime: string;
   endTime: string;
 };
 
 function eventDefaults(event: CalendarEvent): FormValues {
   const [date, startTime] = toInputValue(new Date(event.startDate)).split("T");
-  const [, endTime] = toInputValue(new Date(event.endDate)).split("T");
-  return { name: event.name, date, startTime, endTime };
+  const [endDate, endTime] = toInputValue(new Date(event.endDate)).split("T");
+  return { name: event.name, date, endDate, startTime, endTime };
 }
 
 export default function EditEventPage() {
@@ -54,7 +58,7 @@ export default function EditEventPage() {
   return (
     <EditEventForm
       event={event}
-      onClose={() => router.push(`/calendar/${view}/${date}`)}
+      onClose={() => router.push(paths.calendarDate(view, date))}
     />
   );
 }
@@ -66,19 +70,27 @@ function EditEventForm({
   event: CalendarEvent;
   onClose: () => void;
 }) {
+  const spansDays = isMultiDay(event);
   const [updateEvent] = useUpdateEventMutation();
   const { enqueueSnackbar } = useSnackbar();
   const {
     register,
     handleSubmit,
     getValues,
+    setValue,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ defaultValues: eventDefaults(event) });
 
-  async function onSubmit({ name, date, startTime, endTime }: FormValues) {
+  async function onSubmit({
+    name,
+    date,
+    endDate: endDay,
+    startTime,
+    endTime,
+  }: FormValues) {
     const startDate = fromInputValue(`${date}T${startTime}`);
-    const endDate = fromInputValue(`${date}T${endTime}`);
+    const endDate = fromInputValue(`${endDay}T${endTime}`);
     if (!startDate || !endDate) {
       setError("root.server", { message: "Enter a valid date and time" });
       return;
@@ -102,13 +114,6 @@ function EditEventForm({
     enqueueSnackbar("Event updated", { variant: "success" });
     onClose();
   }
-
-  const timeField = { sx: { width: 110 } };
-  const smallText = {
-    inputLabel: { shrink: true, sx: { fontSize: 13 } },
-    input: { sx: { fontSize: 13 } },
-    formHelperText: { sx: { fontSize: 11 } },
-  };
 
   return (
     <DraggableDialog open onClose={onClose}>
@@ -160,42 +165,91 @@ function EditEventForm({
           </Stack>
           <Stack
             direction="row"
-            spacing={2}
-            sx={{ mt: 3, alignItems: "center" }}
+            spacing={1}
+            useFlexGap
+            sx={{
+              mt: 3,
+              alignItems: "center",
+              flexWrap: "wrap",
+              "& .MuiTextField-root": {
+                flex: 1,
+                minWidth: 150,
+                "&:has(input[type=time])": { flex: "none", width: 120 },
+              },
+              "& .MuiFilledInput-root": {
+                fontSize: 14,
+                borderRadius: 1,
+                bgcolor: "#e1e3e8",
+                "&::before, &::after": { display: "none" },
+              },
+              "& .MuiFilledInput-input": { py: 1 },
+            }}
           >
             <AccessTimeIcon fontSize="small" sx={{ width: 32 }} />
             <TextField
               type="date"
+              aria-label="Start date"
+              variant="filled"
               size="small"
-              label="Date"
-              {...register("date", { required: "Date is required" })}
+              hiddenLabel
+              {...register("date", {
+                required: "Date is required",
+                onChange: (e) => {
+                  if (!spansDays || getValues("endDate") < e.target.value) {
+                    setValue("endDate", e.target.value);
+                  }
+                },
+              })}
               error={Boolean(errors.date)}
               helperText={errors.date?.message}
-              slotProps={smallText}
             />
+
             <TextField
               type="time"
+              aria-label="Start time"
+              variant="filled"
               size="small"
-              label="Start"
-              {...register("startTime", { required: "Start time is required" })}
+              hiddenLabel
+              {...register("startTime", {
+                required: "Start time is required",
+              })}
               error={Boolean(errors.startTime)}
               helperText={errors.startTime?.message}
-              slotProps={smallText}
-              {...timeField}
             />
+            <Typography color="text.secondary" sx={{ px: 0.5 }}>
+              –
+            </Typography>
+            {spansDays && (
+              <TextField
+                type="date"
+                aria-label="End date"
+                variant="filled"
+                size="small"
+                hiddenLabel
+                {...register("endDate", {
+                  required: "End date is required",
+                  validate: (v) =>
+                    v >= getValues("date") || "End must be after start",
+                })}
+                error={Boolean(errors.endDate)}
+                helperText={errors.endDate?.message}
+              />
+            )}
             <TextField
               type="time"
+              aria-label="End time"
+              variant="filled"
               size="small"
-              label="End"
+              hiddenLabel
               {...register("endTime", {
                 required: "End time is required",
                 validate: (v) =>
-                  v > getValues("startTime") || "End must be after start",
+                  `${getValues("endDate")}T${v}` >
+                    `${getValues("date")}T${getValues("startTime")}` ||
+                  "End must be after start",
               })}
               error={Boolean(errors.endTime)}
               helperText={errors.endTime?.message}
-              slotProps={smallText}
-              {...timeField}
             />
           </Stack>
         </DialogContent>

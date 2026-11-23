@@ -1,13 +1,9 @@
 import { eventTimeLabel, type PositionedEvent } from "@/lib/calendar-grid";
 import Box from "@mui/material/Box";
-import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import type { ReactNode } from "react";
+import { HOUR_HEIGHT } from "../week/Week.styles";
 
-const minEventHeight = 22;
-const hourHeight = 48;
-
-export function DayEvent({
+export function EventBlock({
   event,
   startMinutes,
   endMinutes,
@@ -31,17 +27,13 @@ export function DayEvent({
           anchorName: "--draft",
         }),
         position: "absolute",
-        top: (startMinutes / 60) * hourHeight,
-        height: Math.max(
-          ((endMinutes - startMinutes) / 60) * hourHeight,
-          minEventHeight,
-        ),
+        top: (startMinutes / 60) * HOUR_HEIGHT,
+        height: Math.max(((endMinutes - startMinutes) / 60) * HOUR_HEIGHT, 22),
         left: `${index * step}%`,
         width: `${100 - (count - 1) * step}%`,
         zIndex: index + 1,
         px: 0.75,
         overflow: "hidden",
-        pointerEvents: "auto",
         cursor: "pointer",
         fontSize: 11,
         lineHeight: "18px",
@@ -60,15 +52,3 @@ export function DayEvent({
     </Box>
   );
 }
-
-export function DayColumn({ children }: { children: ReactNode }) {
-  return <Box sx={{ position: "relative", minWidth: 0 }}>{children}</Box>;
-}
-
-export const WeekContainer = styled(Box)({
-  position: "absolute",
-  inset: 0,
-  display: "grid",
-  gridTemplateColumns: "72px repeat(7, minmax(0, 1fr))",
-  pointerEvents: "none",
-});

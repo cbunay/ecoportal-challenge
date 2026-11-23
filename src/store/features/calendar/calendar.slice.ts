@@ -4,6 +4,7 @@ import { calendarTimeZone } from "@/lib/defaults";
 
 export type EventDraft = {
   date: string;
+  endDate?: string;
   startTime?: string;
   endTime?: string;
   name?: string;
