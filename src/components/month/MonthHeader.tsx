@@ -1,14 +1,13 @@
 import type { MonthDay } from "@/lib/calendar-grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { MONTH_COLUMNS } from "./Month.styles";
 
 export function MonthHeader({ days }: { days: MonthDay[] }) {
   return (
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: MONTH_COLUMNS,
+        gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
       }}
     >
       {days.map((day) => (

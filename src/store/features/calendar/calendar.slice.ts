@@ -10,7 +10,7 @@ export type EventDraft = {
   name?: string;
 };
 
-export type CalendarState = {
+type CalendarState = {
   timeZone: string;
   draftEvent: EventDraft | null;
 };

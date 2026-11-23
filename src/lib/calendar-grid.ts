@@ -198,7 +198,7 @@ export function weekRange(reference: Date) {
   return isoRange(start, end);
 }
 
-export function eventDayKey(iso: string) {
+function eventDayKey(iso: string) {
   return dayKey(new Date(iso));
 }
 
@@ -262,10 +262,6 @@ export function eventRangeLabel(event: CalendarEvent) {
   const times = `${eventTimeLabel(event.startDate)} – ${eventTimeLabel(event.endDate)}`;
 
   return `${day} · ${times}`;
-}
-
-export function eventHourLabel(iso: string) {
-  return formatInZone(new Date(iso), "h a");
 }
 
 export type PositionedEvent = {

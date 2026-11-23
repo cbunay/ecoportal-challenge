@@ -13,7 +13,7 @@ export class InvalidEventError extends Error {
   }
 }
 
-export const eventBaseSchema = z.object({
+const eventBaseSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
   type: z.enum(EventType),
   startDate: z.iso.datetime({ error: "Invalid start date" }),
@@ -41,7 +41,7 @@ export const updateEventSchema = eventBaseSchema
   .partial()
   .superRefine(endAfterStart);
 
-export const queryDateRangeSchema = z
+const queryDateRangeSchema = z
   .object({
     start: z.iso.datetime({ error: "Invalid start date" }),
     end: z.iso.datetime({ error: "Invalid end date" }),

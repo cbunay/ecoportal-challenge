@@ -5,11 +5,6 @@ import Typography from "@mui/material/Typography";
 import { BAR_HEIGHT } from "../event/EventBar";
 import type { ReactNode } from "react";
 
-export const MONTH_COLUMNS = "repeat(7, minmax(0, 1fr))";
-export const DAY_LABEL_HEIGHT = 28;
-
-const labelColor = (day: MonthDay) => (day.inMonth ? "#3c4043" : "#70757a");
-
 export function DayCell({
   day,
   column,
@@ -43,7 +38,7 @@ export function DayCell({
           lineHeight: "24px",
           width: day.isToday ? 24 : "auto",
           borderRadius: "50%",
-          color: day.isToday ? "#fff" : labelColor(day),
+          color: day.isToday ? "#fff" : day.inMonth ? "#3c4043" : "#70757a",
           bgcolor: day.isToday ? "#1A73E8" : "transparent",
         }}
       >
@@ -68,8 +63,8 @@ export function WeekRow({
         minHeight: 0,
         overflow: "hidden",
         display: "grid",
-        gridTemplateColumns: MONTH_COLUMNS,
-        gridTemplateRows: `${DAY_LABEL_HEIGHT}px repeat(${lanes}, ${BAR_HEIGHT}px) 1fr`,
+        gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+        gridTemplateRows: `28px repeat(${lanes}, ${BAR_HEIGHT}px) 1fr`,
         rowGap: "2px",
         "&:not(:last-of-type)": { borderBottom: "1px solid #e6e8ec" },
       }}

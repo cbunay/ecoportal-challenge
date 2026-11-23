@@ -6,7 +6,7 @@ import type {
   UpdateEventInput,
 } from "@/sever/event.type";
 
-export type EventsRange = { start: string; end: string };
+type EventsRange = { start: string; end: string };
 
 const eventList = { type: "Event", id: "LIST" } as const;
 
