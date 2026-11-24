@@ -17,7 +17,7 @@ import Typography from "@mui/material/Typography";
 
 import { useParams, useRouter } from "next/navigation";
 
-import { eventRangeLabel } from "@/lib/calendar-grid";
+import { eventRangeLabel } from "@/lib/calendar-layout";
 import {
   useDeleteEventMutation,
   useGetEventQuery,

@@ -1,15 +1,19 @@
 import { paths } from "@/lib/calendar-paths";
 import {
-  buildGmtOffsetLabel,
+  getGmtOffsetLabel,
+  dateFormat,
+  formatInZone,
+  formatDayLabel,
+} from "@/lib/calendar-dates";
+import {
   buildHourLabels,
   buildWeekDays,
   draftSlot,
-  formatDateParam,
   groupEventsByDay,
   isMultiDay,
   lineUpDayEvents,
   lineUpMultiDayEvents,
-} from "@/lib/calendar-grid";
+} from "@/lib/calendar-layout";
 import type { CalendarEvent } from "@/sever/event.type";
 import Stack from "@mui/material/Stack";
 
@@ -36,19 +40,25 @@ export function WeekGrid({
   const { view } = useParams<{ view: string }>();
   const weekDays = buildWeekDays(focusedDate);
   const hours = buildHourLabels();
-  const offsetLabel = buildGmtOffsetLabel(focusedDate);
+  const offsetLabel = getGmtOffsetLabel(focusedDate);
   const eventsByDay = groupEventsByDay(events);
   const multiDayEvents = events.filter(isMultiDay);
 
   const openCreate = (draft: EventDraft) => {
     dispatch(setDraftEvent(draft));
     router.push(
-      paths.eventCreate(view, formatDateParam(focusedDate), draftSlot(draft)),
+      paths.eventCreate(
+        view,
+        formatInZone(focusedDate, dateFormat),
+        draftSlot(draft),
+      ),
     );
   };
 
   const openEvent = (id: string) =>
-    router.push(paths.eventDetails(view, formatDateParam(focusedDate), id));
+    router.push(
+      paths.eventDetails(view, formatInZone(focusedDate, dateFormat), id),
+    );
 
   return (
     <Stack role="grid" aria-label="Week" sx={{ minHeight: 0 }}>
@@ -62,28 +72,32 @@ export function WeekGrid({
 
       <WeekBody>
         <HourColumn hours={hours} />
-        {weekDays.map((day) => (
-          <DayColumn key={day.key}>
-            {hours.map((hour, hourIndex) => (
-              <HourCell
-                key={hour}
-                onClick={() =>
-                  openCreate({
-                    date: day.key,
-                    startTime: `${String(hourIndex).padStart(2, "0")}:00`,
-                  })
-                }
-              />
-            ))}
-            {lineUpDayEvents(eventsByDay[day.key] ?? []).map((event) => (
-              <EventBlock
-                key={event.event.id}
-                {...event}
-                onClick={() => openEvent(event.event.id)}
-              />
-            ))}
-          </DayColumn>
-        ))}
+        {weekDays.map((day) => {
+          return (
+            <DayColumn key={day.key} role="rowgroup">
+              {hours.map((hour, hourIndex) => (
+                <HourCell
+                  key={hour}
+                  role="gridcell"
+                  aria-label={`${formatDayLabel(day.key)}, ${hour}`}
+                  onClick={() =>
+                    openCreate({
+                      date: day.key,
+                      startTime: `${String(hourIndex).padStart(2, "0")}:00`,
+                    })
+                  }
+                />
+              ))}
+              {lineUpDayEvents(eventsByDay[day.key] ?? []).map((event) => (
+                <EventBlock
+                  key={event.event.id}
+                  {...event}
+                  onClick={() => openEvent(event.event.id)}
+                />
+              ))}
+            </DayColumn>
+          );
+        })}
       </WeekBody>
     </Stack>
   );

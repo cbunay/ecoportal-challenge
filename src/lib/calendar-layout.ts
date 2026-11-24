@@ -1,83 +1,34 @@
-import { tz } from "@date-fns/tz";
 import {
   addHours,
-  addMonths,
-  addWeeks,
   eachDayOfInterval,
-  endOfMonth,
-  endOfWeek,
   format,
   isSameDay,
   isSameMonth,
-  isValid,
-  parse,
-  startOfDay,
   startOfHour,
-  startOfMonth,
-  startOfWeek,
 } from "date-fns";
 
-import { calendarTimeZone } from "@/lib/defaults";
+import {
+  dateFormat,
+  formatInZone,
+  fromInputValue,
+  monthRange,
+  weekRange,
+  zone,
+} from "@/lib/calendar-dates";
 import { EventType, type CalendarEvent } from "@/sever/event.type";
 
-const inTimeZone = tz(calendarTimeZone);
-const zone = { in: inTimeZone };
-const weekOptions = { in: inTimeZone, weekStartsOn: 0 as const };
-
-const dateKeyFormat = "yyyy-MM-dd";
-const dateTimeInputFormat = "yyyy-MM-dd'T'HH:mm";
 const daysPerWeek = 7;
 const minutesPerDay = 24 * 60;
 const msPerMinute = 60_000;
 const msPerHour = 60 * msPerMinute;
 
-export enum CalendarView {
-  Month = "month",
-  Week = "week",
-}
-
-function formatInZone(date: Date, pattern: string) {
-  return format(date, pattern, zone);
-}
-
-function toIso(date: Date) {
-  return new Date(date.getTime()).toISOString();
-}
-
-function dayKey(date: Date) {
-  return formatInZone(date, dateKeyFormat);
-}
-
 function dayLabel(date: Date) {
   const dayOfMonth = formatInZone(date, "d");
-
   return dayOfMonth === "1" ? formatInZone(date, "MMM d") : dayOfMonth;
 }
 
 function eachZonedDay(start: Date, end: Date) {
   return eachDayOfInterval({ start, end }, zone);
-}
-
-function weekBounds(reference: Date) {
-  return {
-    start: startOfWeek(reference, weekOptions),
-    end: endOfWeek(reference, weekOptions),
-  };
-}
-
-function monthGridBounds(reference: Date) {
-  const monthStart = startOfMonth(reference, zone);
-  const monthEnd = endOfMonth(reference, zone);
-
-  return {
-    monthStart,
-    start: startOfWeek(monthStart, weekOptions),
-    end: endOfWeek(monthEnd, weekOptions),
-  };
-}
-
-function isoRange(start: Date, end: Date) {
-  return { start: toIso(start), end: toIso(end) };
 }
 
 export type MonthDay = {
@@ -89,13 +40,13 @@ export type MonthDay = {
 };
 
 export function buildMonthWeeks(reference: Date, today: Date = reference) {
-  const { monthStart, start, end } = monthGridBounds(reference);
+  const { monthStart, start, end } = monthRange(reference);
   const days = eachZonedDay(start, end);
   const weeks: MonthDay[][] = [];
 
   for (let index = 0; index < days.length; index += daysPerWeek) {
     const week = days.slice(index, index + daysPerWeek).map((day) => ({
-      key: dayKey(day),
+      key: formatInZone(day, dateFormat),
       weekday: formatInZone(day, "EEE").toUpperCase(),
       label: dayLabel(day),
       inMonth: isSameMonth(day, monthStart, zone),
@@ -116,11 +67,11 @@ export type WeekDay = {
 };
 
 export function buildWeekDays(reference: Date) {
-  const { start, end } = weekBounds(reference);
+  const { start, end } = weekRange(reference);
   const today = new Date();
 
   return eachZonedDay(start, end).map((day) => ({
-    key: dayKey(day),
+    key: formatInZone(day, dateFormat),
     weekday: formatInZone(day, "EEE").toUpperCase(),
     label: formatInZone(day, "d"),
     isToday: isSameDay(day, today, zone),
@@ -130,81 +81,12 @@ export function buildWeekDays(reference: Date) {
 export function buildHourLabels() {
   return Array.from({ length: 24 }, (_, hour) => {
     const clockHour = new Date(2026, 0, 1, hour);
-
     return format(clockHour, "h a");
   });
 }
 
-export function buildGmtOffsetLabel(reference: Date) {
-  return formatInZone(reference, "O");
-}
-
-export function formatPeriodLabel(reference: Date, view: CalendarView) {
-  if (view === CalendarView.Month) {
-    return formatInZone(reference, "MMMM yyyy");
-  }
-
-  const { start, end } = weekBounds(reference);
-  const startMonth = formatInZone(start, "MMM yyyy");
-  const endMonth = formatInZone(end, "MMM yyyy");
-
-  if (startMonth === endMonth) return formatInZone(start, "MMMM yyyy");
-
-  return `${startMonth} – ${endMonth}`;
-}
-
-export function shiftPeriod(
-  reference: Date,
-  view: CalendarView,
-  amount: number,
-) {
-  if (view === CalendarView.Week) return addWeeks(reference, amount, zone);
-
-  return addMonths(reference, amount, zone);
-}
-
-export function formatDateParam(date: Date) {
-  return dayKey(date);
-}
-
-export function parseDateParam(param: string | null) {
-  const today = startOfDay(new Date(), zone);
-  if (!param) return today;
-
-  const parsed = parse(param, dateKeyFormat, today, zone);
-
-  return isValid(parsed) ? parsed : today;
-}
-
-export function toInputValue(date: Date) {
-  return formatInZone(date, dateTimeInputFormat);
-}
-
-export function fromInputValue(value: string) {
-  const parsed = parse(value, dateTimeInputFormat, new Date(), zone);
-
-  return isValid(parsed) ? toIso(parsed) : null;
-}
-
-export function monthRange(reference: Date) {
-  const { start, end } = monthGridBounds(reference);
-
-  return isoRange(start, end);
-}
-
-export function weekRange(reference: Date) {
-  const { start, end } = weekBounds(reference);
-
-  return isoRange(start, end);
-}
-
-function eventDayKey(iso: string) {
-  return dayKey(new Date(iso));
-}
-
 function defaultDraftStartTime() {
   const nextHour = addHours(startOfHour(new Date()), 1);
-
   return formatInZone(nextHour, "HH:mm");
 }
 
@@ -240,12 +122,7 @@ export function draftToEvent(draft: {
 
 export function draftSlot(draft: Parameters<typeof draftToEvent>[0]) {
   const startDate = draftToEvent(draft)?.startDate;
-
   return startDate ? Date.parse(startDate) : Date.now();
-}
-
-export function eventTimeLabel(iso: string) {
-  return formatInZone(new Date(iso), "h:mm a");
 }
 
 export function eventRangeLabel(event: CalendarEvent) {
@@ -254,14 +131,16 @@ export function eventRangeLabel(event: CalendarEvent) {
 
   if (isMultiDay(event)) {
     const when = "EEE, MMM d, h:mm a";
-
-    return `${formatInZone(start, when)} – ${formatInZone(end, when)}`;
+    const startLabel = formatInZone(start, when);
+    const endLabel = formatInZone(end, when);
+    return `${startLabel} – ${endLabel}`;
   }
 
   const day = formatInZone(start, "EEEE, MMMM d");
-  const times = `${eventTimeLabel(event.startDate)} – ${eventTimeLabel(event.endDate)}`;
+  const startLabel = formatInZone(start, "h:mm a");
+  const endLabel = formatInZone(end, "h:mm a");
 
-  return `${day} · ${times}`;
+  return `${day} · ${startLabel} – ${endLabel}`;
 }
 
 export type PositionedEvent = {
@@ -276,7 +155,6 @@ function minutesOfDay(iso: string) {
   const date = new Date(iso);
   const hours = Number(formatInZone(date, "H"));
   const minutes = Number(formatInZone(date, "m"));
-
   return hours * 60 + minutes;
 }
 
@@ -349,16 +227,14 @@ export type WeekBar = {
 };
 
 function eventDayRange(event: CalendarEvent) {
-  const startKey = eventDayKey(event.startDate);
+  const startKey = formatInZone(new Date(event.startDate), dateFormat);
   const inclusiveEnd = new Date(new Date(event.endDate).getTime() - 1);
-  const endKey = eventDayKey(inclusiveEnd.toISOString());
-
+  const endKey = formatInZone(inclusiveEnd, dateFormat);
   return { startKey, endKey: endKey < startKey ? startKey : endKey };
 }
 
 export function isMultiDay(event: CalendarEvent) {
   const { startKey, endKey } = eventDayRange(event);
-
   return startKey !== endKey;
 }
 
@@ -368,7 +244,7 @@ export function groupEventsByDay(events: CalendarEvent[]) {
   for (const event of events) {
     if (isMultiDay(event)) continue;
 
-    const day = eventDayKey(event.startDate);
+    const day = formatInZone(new Date(event.startDate), dateFormat);
     byDay[day] ??= [];
     byDay[day].push(event);
   }
@@ -421,7 +297,6 @@ function assignLanes(bars: PlacedBar[]): { bars: WeekBar[]; lanes: number } {
     );
     const lane = openLane === -1 ? laneEnds.length : openLane;
     laneEnds[lane] = bar.colEnd;
-
     return { ...bar, lane };
   });
 

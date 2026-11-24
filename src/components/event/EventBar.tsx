@@ -1,4 +1,5 @@
-import { eventTimeLabel, type WeekBar } from "@/lib/calendar-grid";
+import { formatInZone } from "@/lib/calendar-dates";
+import { type WeekBar } from "@/lib/calendar-layout";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { Children, type ReactNode } from "react";
@@ -17,6 +18,7 @@ export function EventBar({
   onOpen,
 }: WeekBar & { rowOffset?: number; onOpen: (id: string) => void }) {
   const singleDay = startsInWeek && endsInWeek && colStart === colEnd;
+  const timeLabel = formatInZone(new Date(event.startDate), "h:mm a");
 
   return (
     <Typography
@@ -43,7 +45,7 @@ export function EventBar({
         borderBottomRightRadius: endsInWeek ? "4px" : 0,
       }}
     >
-      {singleDay ? `${eventTimeLabel(event.startDate)} ` : ""}
+      {singleDay ? `${timeLabel} ` : ""}
       {event.name}
     </Typography>
   );

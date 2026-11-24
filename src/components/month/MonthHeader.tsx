@@ -1,4 +1,4 @@
-import type { MonthDay } from "@/lib/calendar-grid";
+import { MonthDay } from "@/lib/calendar-layout";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 

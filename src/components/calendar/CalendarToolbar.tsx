@@ -12,10 +12,11 @@ import Select from "@mui/material/Select";
 
 import {
   CalendarView,
-  formatDateParam,
-  formatPeriodLabel,
+  dateFormat,
+  formatInZone,
+  getToolbarTitle,
   shiftPeriod,
-} from "@/lib/calendar-grid";
+} from "@/lib/calendar-dates";
 import { useFocusedDate } from "@/lib/use-focused-date";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
@@ -27,7 +28,7 @@ export function CalendarToolbar() {
   const router = useRouter();
 
   const go = (amount: number) => {
-    const as = formatDateParam(shiftPeriod(focusedDate, view, amount));
+    const as = formatInZone(shiftPeriod(focusedDate, view, amount), dateFormat);
     router.push(paths.calendarDate(view, as));
   };
 
@@ -63,17 +64,17 @@ export function CalendarToolbar() {
       </Tooltip>
 
       <Typography
-        component="h1"
+        component="h2"
         sx={{ fontSize: 22, fontWeight: 400, color: "#3c4043" }}
       >
-        {formatPeriodLabel(focusedDate, view)}
+        {getToolbarTitle(focusedDate, view)}
       </Typography>
 
       <Select
         value={view}
         variant="outlined"
         size="small"
-        inputProps={{ "aria-label": "View" }}
+        inputProps={{ "aria-label": "View Picker" }}
         onChange={(event) =>
           router.push(
             date

@@ -1,4 +1,4 @@
-import type { WeekDay } from "@/lib/calendar-grid";
+import { WeekDay } from "@/lib/calendar-layout";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";

@@ -30,7 +30,7 @@ import {
 import { useCalendarDispatch, useCalendarSelector } from "@/store/hooks";
 import { useFocusedDate } from "@/lib/use-focused-date";
 
-import { fromInputValue, toInputValue } from "@/lib/calendar-grid";
+import { dateFormat, formatInZone, fromInputValue } from "@/lib/calendar-dates";
 import { useSnackbar } from "notistack";
 import { DraggableDialog } from "@/components/calendar/DraggableDialog";
 import { useCreateEventMutation } from "@/store/features/events/events.api";
@@ -49,8 +49,8 @@ function defaultTimes(draftEvent: EventDraft) {
   const start = draftEvent.startTime
     ? (fromInputValue(`${date}T${draftEvent.startTime}`) ?? new Date())
     : addHours(startOfHour(new Date()), 1);
-  const [, startTime] = toInputValue(new Date(start)).split("T");
-  const [, endTime] = toInputValue(addHours(new Date(start), 1)).split("T");
+  const startTime = formatInZone(new Date(start), "HH:mm");
+  const endTime = formatInZone(addHours(new Date(start), 1), "HH:mm");
   return { date, endDate: draftEvent.endDate ?? date, startTime, endTime };
 }
 
@@ -66,7 +66,7 @@ function CreateEventForm() {
   const focusedDate = useFocusedDate();
   const draft = useCalendarSelector(selectDraftEvent);
   const draftEvent: EventDraft = draft ?? {
-    date: toInputValue(focusedDate).split("T")[0],
+    date: formatInZone(focusedDate, dateFormat),
   };
   const [createEvent] = useCreateEventMutation();
   const { enqueueSnackbar } = useSnackbar();

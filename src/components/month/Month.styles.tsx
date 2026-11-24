@@ -1,4 +1,5 @@
-import type { MonthDay } from "@/lib/calendar-grid";
+import { formatDayLabel } from "@/lib/calendar-dates";
+import { MonthDay } from "@/lib/calendar-layout";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -17,6 +18,7 @@ export function DayCell({
   return (
     <Stack
       role="gridcell"
+      aria-label={formatDayLabel(day.key)}
       aria-current={day.isToday ? "date" : undefined}
       onClick={onClick}
       sx={{

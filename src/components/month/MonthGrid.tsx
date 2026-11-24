@@ -2,12 +2,12 @@ import { paths } from "@/lib/calendar-paths";
 import Stack from "@mui/material/Stack";
 import { useParams, useRouter } from "next/navigation";
 
+import { dateFormat, formatInZone } from "@/lib/calendar-dates";
 import {
   buildMonthWeeks,
   draftSlot,
-  formatDateParam,
   lineUpMultiDayEvents,
-} from "@/lib/calendar-grid";
+} from "@/lib/calendar-layout";
 import type { CalendarEvent } from "@/sever/event.type";
 import {
   setDraftEvent,
@@ -33,12 +33,18 @@ export function MonthGrid({
   const openCreate = (draft: EventDraft) => {
     dispatch(setDraftEvent(draft));
     router.push(
-      paths.eventCreate(view, formatDateParam(focusedDate), draftSlot(draft)),
+      paths.eventCreate(
+        view,
+        formatInZone(focusedDate, dateFormat),
+        draftSlot(draft),
+      ),
     );
   };
 
   const openEvent = (id: string) =>
-    router.push(paths.eventDetails(view, formatDateParam(focusedDate), id));
+    router.push(
+      paths.eventDetails(view, formatInZone(focusedDate, dateFormat), id),
+    );
 
   return (
     <Stack sx={{ flex: 1 }}>

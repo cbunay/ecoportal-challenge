@@ -1,4 +1,5 @@
-import { eventTimeLabel, type PositionedEvent } from "@/lib/calendar-grid";
+import { formatInZone } from "@/lib/calendar-dates";
+import { type PositionedEvent } from "@/lib/calendar-layout";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { HOUR_HEIGHT } from "../week/Week.styles";
@@ -14,11 +15,11 @@ export function EventBlock({
   onClick: () => void;
 }) {
   const step = 100 / (count + 1);
-  const time = eventTimeLabel(event.startDate);
+  const timeLabel = formatInZone(new Date(event.startDate), "h:mm a");
 
   return (
     <Box
-      title={`${event.name}, ${time}`}
+      title={`${event.name}, ${timeLabel}`}
       role="button"
       tabIndex={0}
       onClick={onClick}
@@ -47,7 +48,7 @@ export function EventBlock({
         {event.name}
       </Typography>
       <Typography noWrap sx={{ font: "inherit", opacity: 0.85 }}>
-        {time}
+        {timeLabel}
       </Typography>
     </Box>
   );

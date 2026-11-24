@@ -11,7 +11,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 import { useRef, useState } from "react";
 
-import { formatDateParam, toInputValue } from "@/lib/calendar-grid";
+import { dateFormat, formatInZone } from "@/lib/calendar-dates";
 import { useFocusedDate } from "@/lib/use-focused-date";
 import {
   setDraftEvent,
@@ -30,13 +30,17 @@ export function CalendarSidebar() {
   const openCreate = (draft: EventDraft) => {
     dispatch(setDraftEvent(draft));
     router.push(
-      paths.eventCreate(view, formatDateParam(focusedDate), Date.now()),
+      paths.eventCreate(
+        view,
+        formatInZone(focusedDate, dateFormat),
+        Date.now(),
+      ),
     );
   };
 
   const handleCreateMeeting = () => {
     setMenuOpen(false);
-    const [date] = toInputValue(focusedDate).split("T");
+    const date = formatInZone(focusedDate, dateFormat);
     openCreate({ date });
   };
   return (
@@ -66,7 +70,7 @@ export function CalendarSidebar() {
           <CalendarMonthOutlinedIcon fontSize="small" />
         </Box>
         <Typography
-          component="span"
+          component="h1"
           sx={{
             fontSize: 22,
             fontWeight: 500,

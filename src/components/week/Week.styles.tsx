@@ -1,5 +1,6 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { styled } from "@mui/system";
 import type { ReactNode } from "react";
 
 export const HOUR_HEIGHT = 48;
@@ -37,31 +38,14 @@ export function HourColumn({ hours }: { hours: string[] }) {
   );
 }
 
-export function DayColumn({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      role="rowgroup"
-      sx={{
-        position: "relative",
-        minWidth: 0,
-        borderLeft: "1px solid #e6e8ec",
-      }}
-    >
-      {children}
-    </Box>
-  );
-}
+export const DayColumn = styled(Box)({
+  position: "relative",
+  minWidth: 0,
+  borderLeft: "1px solid #e6e8ec",
+});
 
-export function HourCell({ onClick }: { onClick: () => void }) {
-  return (
-    <Box
-      role="gridcell"
-      onClick={onClick}
-      sx={{
-        height: HOUR_HEIGHT,
-        borderBottom: "1px solid #e6e8ec",
-        cursor: "pointer",
-      }}
-    />
-  );
-}
+export const HourCell = styled(Box)({
+  height: HOUR_HEIGHT,
+  borderBottom: "1px solid #e6e8ec",
+  cursor: "pointer",
+});

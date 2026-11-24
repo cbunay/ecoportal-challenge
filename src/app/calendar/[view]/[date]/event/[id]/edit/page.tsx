@@ -20,7 +20,8 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import { useParams, useRouter } from "next/navigation";
 
-import { fromInputValue, isMultiDay, toInputValue } from "@/lib/calendar-grid";
+import { dateFormat, formatInZone, fromInputValue } from "@/lib/calendar-dates";
+import { isMultiDay } from "@/lib/calendar-layout";
 import {
   useGetEventQuery,
   useUpdateEventMutation,
@@ -39,8 +40,10 @@ type FormValues = {
 };
 
 function eventDefaults(event: CalendarEvent): FormValues {
-  const [date, startTime] = toInputValue(new Date(event.startDate)).split("T");
-  const [endDate, endTime] = toInputValue(new Date(event.endDate)).split("T");
+  const date = formatInZone(new Date(event.startDate), dateFormat);
+  const startTime = formatInZone(new Date(event.startDate), "HH:mm");
+  const endDate = formatInZone(new Date(event.endDate), dateFormat);
+  const endTime = formatInZone(new Date(event.endDate), "HH:mm");
   return { name: event.name, date, endDate, startTime, endTime };
 }
 

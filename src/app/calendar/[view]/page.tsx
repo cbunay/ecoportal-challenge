@@ -1,4 +1,4 @@
-import { CalendarView } from "@/lib/calendar-grid";
+import { CalendarView } from "@/lib/calendar-dates";
 
 export function generateStaticParams() {
   return [{ view: CalendarView.Month }, { view: CalendarView.Week }];

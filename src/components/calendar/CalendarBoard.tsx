@@ -2,10 +2,11 @@
 
 import {
   CalendarView,
-  draftToEvent,
   monthRange,
+  toIso,
   weekRange,
-} from "@/lib/calendar-grid";
+} from "@/lib/calendar-dates";
+import { draftToEvent } from "@/lib/calendar-layout";
 
 import { useFocusedDate } from "@/lib/use-focused-date";
 import { selectDraftEvent } from "@/store/features/calendar/calendar.slice";
@@ -24,7 +25,7 @@ export function CalendarBoard() {
   const draftEvent = useCalendarSelector(selectDraftEvent);
   const previewEvent = draftEvent && draftToEvent(draftEvent);
 
-  const range =
+  const { start, end } =
     view === CalendarView.Week
       ? weekRange(focusedDate)
       : monthRange(focusedDate);
@@ -34,7 +35,7 @@ export function CalendarBoard() {
     isFetching,
     isError,
     refetch,
-  } = useGetEventsQuery(range);
+  } = useGetEventsQuery({ start: toIso(start), end: toIso(end) });
 
   const visibleEvents = previewEvent ? [...events, previewEvent] : events;
 
