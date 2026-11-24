@@ -69,7 +69,6 @@ describe("MonthGrid", () => {
   it("renders two bars for a multi-day event", () => {
     renderMonth([conference]);
 
-    // Fri 20 – Tue 24 Nov crosses the week boundary.
     const bars = screen.getAllByTitle("Conference");
     expect(bars).toHaveLength(2);
 

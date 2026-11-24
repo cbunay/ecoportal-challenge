@@ -85,7 +85,7 @@ export function buildHourLabels() {
   });
 }
 
-function defaultDraftStartTime() {
+export function defaultDraftStartTime() {
   const nextHour = addHours(startOfHour(new Date()), 1);
   return formatInZone(nextHour, "HH:mm");
 }
@@ -101,7 +101,7 @@ export function draftToEvent(draft: {
   endTime?: string;
   name?: string;
 }) {
-  const startTime = draft.startTime ?? defaultDraftStartTime();
+  const startTime = draft.startTime ?? "00:00";
   const startDate = fromInputValue(`${draft.date}T${startTime}`);
   if (!startDate) return null;
 

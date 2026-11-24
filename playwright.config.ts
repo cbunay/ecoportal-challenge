@@ -18,10 +18,11 @@ export default defineConfig({
   webServer: {
     command: `npm run dev -- --port ${port}`,
     url: `${baseURL}/calendar/month`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     env: {
       ...(process.env as Record<string, string>),
       TZ: testTimeZone,
+      SEED_EVENTS_FILE: "data/eventsEmp.json",
     },
   },
   projects: [

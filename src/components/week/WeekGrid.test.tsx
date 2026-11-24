@@ -16,7 +16,6 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
-// Wednesday 18 Nov 2026; the week runs Sun 15 – Sat 21.
 const focusedDate = tzDate(2026, 11, 18, 12);
 
 const standup: CalendarEvent = {

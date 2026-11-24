@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 
 import { dateFormat, formatInZone } from "@/lib/calendar-dates";
 import { useFocusedDate } from "@/lib/use-focused-date";
+import { defaultDraftStartTime } from "@/lib/calendar-layout";
 import {
   setDraftEvent,
   type EventDraft,
@@ -41,7 +42,7 @@ export function CalendarSidebar() {
   const handleCreateMeeting = () => {
     setMenuOpen(false);
     const date = formatInZone(focusedDate, dateFormat);
-    openCreate({ date });
+    openCreate({ date, startTime: defaultDraftStartTime() });
   };
   return (
     <Box

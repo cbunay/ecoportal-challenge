@@ -1,19 +1,16 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { styled } from "@mui/system";
-import type { ReactNode } from "react";
 
 export const HOUR_HEIGHT = 48;
 export const GUTTER_WIDTH = 72;
 export const WEEK_COLUMNS = `${GUTTER_WIDTH}px repeat(7, minmax(0, 1fr))`;
 
-export function WeekBody({ children }: { children: ReactNode }) {
-  return (
-    <Box sx={{ display: "grid", gridTemplateColumns: WEEK_COLUMNS }}>
-      {children}
-    </Box>
-  );
-}
+export const WeekBody = styled(Box)({
+  display: "grid",
+  gridTemplateColumns: WEEK_COLUMNS,
+  overflow: "scroll",
+});
 
 export function HourColumn({ hours }: { hours: string[] }) {
   return (

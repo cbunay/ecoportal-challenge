@@ -1,3 +1,5 @@
+"use client";
+
 import { paths } from "@/lib/calendar-paths";
 import {
   getGmtOffsetLabel,

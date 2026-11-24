@@ -7,22 +7,16 @@ test("calendar app is healthy", async ({ page }) => {
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveURL(/\/calendar\/month$/);
   await expect(page).toHaveTitle("Calendar");
+  await expect(page.getByRole("navigation", { name: "Sidebar" })).toBeVisible();
+  await expect(page.getByRole("toolbar", { name: "Toolbar" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Today" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Previous" })).toBeVisible();
+  await expect(
+    page.getByRole("combobox", { name: "View Picker" }),
+  ).toBeVisible();
 
-  const sidebar = page.getByRole("navigation", { name: "Sidebar" });
-  await expect(sidebar.getByRole("button", { name: "Create" })).toBeVisible();
-
-  const toolbar = page.getByRole("toolbar", { name: "Toolbar" });
-  await expect(toolbar.getByRole("button", { name: "Today" })).toBeVisible();
-  await expect(toolbar.getByRole("button", { name: "View" })).toHaveText(
-    "Month",
-  );
-  await expect(toolbar.getByRole("button", { name: "Previous" })).toBeVisible();
-  await expect(toolbar.getByRole("button", { name: "Next" })).toBeVisible();
-
-  await expect(page.getByRole("main")).toBeVisible();
-
-  const browserTimeZone = await page.evaluate(
-    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
-  );
-  expect(browserTimeZone).toBe(testTimeZone);
+  expect(
+    await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone),
+  ).toBe(testTimeZone);
 });

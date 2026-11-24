@@ -1,3 +1,5 @@
+"use client";
+
 import { formatInZone } from "@/lib/calendar-dates";
 import { type PositionedEvent } from "@/lib/calendar-layout";
 import Box from "@mui/material/Box";

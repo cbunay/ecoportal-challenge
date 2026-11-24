@@ -1,3 +1,5 @@
+"use client";
+
 import { paths } from "@/lib/calendar-paths";
 import Stack from "@mui/material/Stack";
 import { useParams, useRouter } from "next/navigation";

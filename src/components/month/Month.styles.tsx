@@ -1,3 +1,5 @@
+"use client";
+
 import { formatDayLabel } from "@/lib/calendar-dates";
 import { MonthDay } from "@/lib/calendar-layout";
 import Box from "@mui/material/Box";
